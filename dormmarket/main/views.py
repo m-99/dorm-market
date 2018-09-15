@@ -7,7 +7,6 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from . import models
-=======
 from main.access_id import ACCESS_ID
 import requests
 from .forms import SellForm
@@ -22,14 +21,15 @@ headers = {
 
 # first thing that user sees -> browse
 def index(request):
-    items = [
-                {"image": "test.png", "name":"Fridge", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"}
-            ]
+    items = Order.objects.order_by('-time_posted')[:9]
+    # items = [
+    #             {"image": "test.png", "name":"Fridge", "price":"50"},
+    #             {"image": "test.png", "name":"Fridge", "price":"50"},
+    #             {"image": "test.png", "name":"Fan", "price":"50"},
+    #             {"image": "test.png", "name":"Macbook Pro", "price":"50"},
+    #             {"image": "test.png", "name":"Netbook", "price":"50"},
+    #             {"image": "test.png", "name":"TI-84", "price":"50"}
+    #         ]
     rows = []
     for i in range(len(items)):
         if i % 3 == 0:

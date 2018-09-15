@@ -16,6 +16,8 @@ class Order(models.Model):
     item_name = models.TextField(max_length=500, blank=True)
     image_url = models.TextField(max_length=500, blank=True)
     type = models.CharField(max_length=1, blank=True)
+    price = models.IntegerField(default=0)
+    time_posted = models.DateTimeField(auto_now_add=True, blank=True)
 
 
 @receiver(post_save, sender=User)

@@ -6,10 +6,22 @@ from django.shortcuts import render, redirect
 
 # first thing that user sees -> browse
 def index(request):
-    context = {
-        "items":[
-                {"image": "test.png", "name":"Fridge", "price":"50"}
+    items = [
+                {"image": "test.png", "name":"Fridge", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"}
             ]
+    rows = []
+    for i in range(len(items)):
+        if i % 3 == 0:
+            rows.append([items[i]])
+        else:
+            rows[i//3].append(items[i])
+    context = {
+        "rows": rows
     }
     return render(request, 'main/index.html', context)
 

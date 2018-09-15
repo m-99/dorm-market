@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^signup/$', views.signup, name='signup'),
     url(r'^debug/$', views.debug, name='debug'),
     url(r'^orders/$', views.trade_list, name='orders'),
-    url(r'^view_market/$', views.get_order_book, name='view_market'),
-    path('sell', views.sell, name="sell")
+    url(r'^view_market/$', views.get_order_book, name='view_market'),    
+    path('sell', views.sell, name="sell"),
+    path('buy', views.buy, name="buy"),
 ]

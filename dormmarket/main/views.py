@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-
+from . import models
 
 # first thing that user sees -> browse
 def index(request):
@@ -28,7 +28,9 @@ def signup(request):
 def debug(request):
     if request.user.is_authenticated:
         user_object = User.objects.get(username=request.user.username)
-        print(user_object.profile)
+        order = models.Order.objects.create(trader_name=user_object.profile, item_name="<item_name>", type="b",
+                             image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg")
+        print(order.item_name)
         print(request.user.profile.order_set.all())
     else:
         print("Please Log in")
@@ -43,9 +45,15 @@ def focused(request):
 def submit_buy(request):
     if request.method == "POST":
         if request.user.is_authenticated:
+            profile = request.user.profile
+            user_object = User.objects.get(username=request.user.username)
             print(request.POST)
-            print(request.user.profile)
-            print(request.user.profile.order_set.all())
+            print(profile)
+            print(profile.order_set.all())
+
+            order = models.Order.objects.create(trader_name=user_object.profile, item_name="<item_name>", type="b",
+                             image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg")
+            print(order)
             return redirect('')
         else:
             print("Please Log in")

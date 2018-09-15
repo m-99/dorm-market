@@ -14,6 +14,7 @@ class Profile(models.Model):
 class Order(models.Model):
     trader_name = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item_name = models.TextField(max_length=500, blank=True)
+    image_url = models.TextField(max_length=500, blank=True)
     type = models.CharField(max_length=1, blank=True)
 
 

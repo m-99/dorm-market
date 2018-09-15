@@ -81,8 +81,7 @@ def submit_buy(request):
             print("Please Log in")
             return redirect('')
     else:
-        pass
-    return HttpResponse("hey bb ur at submit_buy")
+        return HttpResponse("hey bb ur at submit_buy")
 
 
 # a form to submit an item to be sold in the market
@@ -105,8 +104,7 @@ def submit_sell(request):
             print("Please Log in")
             return redirect('')
     else:
-        pass
-    return HttpResponse("hey bb ur at submit_sell")
+        return HttpResponse("hey bb ur at submit_sell")
 
 
 # view items that you are selling in the marketplace
@@ -115,12 +113,12 @@ def trade_list(request):
         profile = request.user.profile
         order_set = profile.order_set.all()
 
-        print(profile.order_set.all())
+        print(order_set)
         items = []
-        for order in profile.order_set.all():
+        for order in order_set:
             items.append({"image": str(order.image_url),
-                          "name": "uvuvwevwevwe",
-                          "price": "50"})
+                          "name": str(order.item_name),
+                          "price": str(order.item_price)})
 
         rows = []
         for i in range(len(items)):

@@ -1,3 +1,5 @@
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse
@@ -7,9 +9,24 @@ from . import models
 
 # first thing that user sees -> browse
 def index(request):
-
-    return HttpResponse("hey bb ur at the main index")
-
+    items = [
+                {"image": "test.png", "name":"Fridge", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"},
+                {"image": "test.png", "name":"Fridge 2", "price":"50"}
+            ]
+    rows = []
+    for i in range(len(items)):
+        if i % 3 == 0:
+            rows.append([items[i]])
+        else:
+            rows[i//3].append(items[i])
+    context = {
+        "rows": rows
+    }
+    return render(request, 'main/index.html', context)
 
 def signup(request):
     if request.method == 'POST':

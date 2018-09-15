@@ -1,16 +1,18 @@
-import json
-
-import requests
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
 from main.access_id import ACCESS_ID
 from .models import Order
 
 from . import models
+import requests
 from .forms import SellForm
+import json
 
 conditions = ['poor', 'okay', 'good', 'new']
 headers = {

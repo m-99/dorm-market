@@ -1,12 +1,15 @@
-from django.http import HttpResponse
-from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+
 
 # first thing that user sees -> browse
 def index(request):
+
     return HttpResponse("hey bb ur at the main index")
+
 
 def signup(request):
     if request.method == 'POST':
@@ -22,17 +25,51 @@ def signup(request):
         form = UserCreationForm()
     return render(request, 'templates/signup.html', {'form': form})
 
+def debug(request):
+    if request.user.is_authenticated:
+        user_object = User.objects.get(username=request.user.username)
+        print(user_object.profile)
+        print(request.user.profile.order_set.all())
+    else:
+        print("Please Log in")
+    return render(request, 'templates/debug.html')
+
 # show an item in detail
 def focused(request):
     return HttpResponse("hey bb ur at focused")
 
+
 # a form to submit a buy request for a type of item
 def submit_buy(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            print(request.POST)
+            print(request.user.profile)
+            print(request.user.profile.order_set.all())
+            return redirect('')
+        else:
+            print("Please Log in")
+            return redirect('')
+    else:
+        pass
     return HttpResponse("hey bb ur at submit_buy")
+
 
 # a form to submit an item to be sold in the market
 def submit_sell(request):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            print(request.POST)
+            print(request.user.profile)
+            print(request.user.profile.order_set.all())
+            return redirect('')
+        else:
+            print("Please Log in")
+            return redirect('')
+    else:
+        pass
     return HttpResponse("hey bb ur at submit_sell")
+
 
 # view items that you are selling in the marketplace
 def sell_list(request):

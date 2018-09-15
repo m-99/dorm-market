@@ -55,7 +55,7 @@ ROOT_URLCONF = 'dormmarket.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR],
+        'DIRS': [BASE_DIR, os.path.join(BASE_DIR, "main/templates/main")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

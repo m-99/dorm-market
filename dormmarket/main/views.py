@@ -1,32 +1,33 @@
-from django.http import HttpResponse
-from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+
 from . import models
+
 
 # first thing that user sees -> browse
 def index(request):
     items = [
-                {"image": "test.png", "name":"Fridge", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"},
-                {"image": "test.png", "name":"Fridge 2", "price":"50"}
-            ]
+        {"image": "test.png", "name": "Fridge", "price": "50"},
+        {"image": "test.png", "name": "Fridge 2", "price": "50"},
+        {"image": "test.png", "name": "Fridge 2", "price": "50"},
+        {"image": "test.png", "name": "Fridge 2", "price": "50"},
+        {"image": "test.png", "name": "Fridge 2", "price": "50"},
+        {"image": "test.png", "name": "Fridge 2", "price": "50"}
+    ]
     rows = []
     for i in range(len(items)):
         if i % 3 == 0:
             rows.append([items[i]])
         else:
-            rows[i//3].append(items[i])
+            rows[i // 3].append(items[i])
     context = {
         "rows": rows
     }
     return render(request, 'main/index.html', context)
+
 
 def signup(request):
     if request.method == 'POST':
@@ -40,18 +41,20 @@ def signup(request):
             return redirect('')
     else:
         form = UserCreationForm()
-    return render(request, 'templates/signup.html', {'form': form})
+    return render(request, 'signup.html', {'form': form})
+
 
 def debug(request):
     if request.user.is_authenticated:
         user_object = User.objects.get(username=request.user.username)
         order = models.Order.objects.create(trader_name=user_object.profile, item_name="<item_name>", type="b",
-                             image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg")
+                                            image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg")
         print(order.item_name)
         print(request.user.profile.order_set.all())
     else:
         print("Please Log in")
-    return render(request, 'templates/debug.html')
+    return render(request, 'debug.html')
+
 
 # show an item in detail
 def focused(request):
@@ -64,12 +67,14 @@ def submit_buy(request):
         if request.user.is_authenticated:
             profile = request.user.profile
             user_object = User.objects.get(username=request.user.username)
-            print(request.POST)
-            print(profile)
+            params = dict(request.POST)
+
             print(profile.order_set.all())
 
-            order = models.Order.objects.create(trader_name=user_object.profile, item_name="<item_name>", type="b",
-                             image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg")
+            order = models.Order.objects.create(trader_name=user_object.profile,
+                                                item_name=params['item_name'],
+                                                type=params['type'],
+                                                image_url=params['image_url'])
             print(order)
             return redirect('')
         else:
@@ -84,9 +89,17 @@ def submit_buy(request):
 def submit_sell(request):
     if request.method == "POST":
         if request.user.is_authenticated:
-            print(request.POST)
-            print(request.user.profile)
-            print(request.user.profile.order_set.all())
+            profile = request.user.profile
+            user_object = User.objects.get(username=request.user.username)
+            params = dict(request.POST)
+
+            print(profile.order_set.all())
+
+            order = models.Order.objects.create(trader_name=user_object.profile,
+                                                item_name=params['item_name'],
+                                                type=params['type'],
+                                                image_url=params['image_url'])
+            print(order)
             return redirect('')
         else:
             print("Please Log in")
@@ -97,5 +110,28 @@ def submit_sell(request):
 
 
 # view items that you are selling in the marketplace
-def sell_list(request):
-    return HttpResponse("hey bb ur at sell_list")
+def trade_list(request):
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        order_set = profile.order_set.all()
+
+        print(profile.order_set.all())
+        items = []
+        for order in profile.order_set.all():
+            items.append({"image": str(order.image_url),
+                          "name": "uvuvwevwevwe",
+                          "price": "50"})
+
+        rows = []
+        for i in range(len(items)):
+            if i % 3 == 0:
+                rows.append([items[i]])
+            else:
+                rows[i // 3].append(items[i])
+        context = {
+            "rows": rows
+        }
+        return render(request, 'trade_list.html', context)
+    else:
+        print("Please Log in")
+        return render(request, 'trade_list.html')

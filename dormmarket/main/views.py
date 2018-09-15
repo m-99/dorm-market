@@ -1,18 +1,16 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+import json
+
+import requests
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
 from main.access_id import ACCESS_ID
-from .models import Order
 
 from . import models
-import requests
 from .forms import SellForm
-import json
+from .models import Order
 
 conditions = ['poor', 'okay', 'good', 'new']
 headers = {
@@ -270,6 +268,7 @@ def get_order_book(request):
         # })
 
         try:
+            check_order_filled(request)
             r = requests.get(
                 'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/' + side + '/',
                 params=params, headers=headers)
@@ -285,3 +284,17 @@ def get_order_book(request):
         return render(request, 'main/view_market.html')
     else:
         return render(request, 'main/view_market.html')
+
+
+def check_order_filled(request):
+    try:
+        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/transactions/',
+                         params={}, headers=headers)
+        print(r)
+    except Exception as e:
+        print("Request to API failed: " + e)
+
+    if request.user.is_authenticated:
+        pass
+    else:
+        return False

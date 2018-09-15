@@ -19,8 +19,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
-# Replace with your own secret key
-SECRET_KEY = 'XXX'
+# SECURITY WARNING: keep the secret key used in production secret!
+with open('dormmarket/secret_key.txt') as file:
+    SECRET_KEY = file.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

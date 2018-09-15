@@ -1,4 +1,6 @@
+import datetime
 import json
+import time
 
 import requests
 from django.contrib.auth import login, authenticate
@@ -7,6 +9,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from main.access_id import ACCESS_ID
+from twilio.rest import Client
 
 from . import models
 from .forms import SellForm
@@ -261,12 +264,6 @@ def get_order_book(request):
 
         }
 
-        # body = json.dumps({
-        #     'price': price,
-        #     'qty': quantity,
-        #     'userId': user_id,
-        # })
-
         try:
             check_order_filled(request)
             r = requests.get(
@@ -288,13 +285,37 @@ def get_order_book(request):
 
 def check_order_filled(request):
     try:
+        profile = request.user.profile
+        order_set = profile.order_set.all()
+
         r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/transactions/',
                          params={}, headers=headers)
-        print(r)
+        print("trades: ", r)
+        print("trades: ", r.json())
+        info = r.json()['data']
+        print(info)
+        for order in info:
+            if order['timestamp'] > time.time() * 1000 - 30000:
+                if str(order_set.order_id) in (order['askId'], order['bidId']):
+                    send_notification()
+                    return True
+
     except Exception as e:
         print("Request to API failed: " + e)
 
-    if request.user.is_authenticated:
-        pass
-    else:
-        return False
+    return False
+
+
+def send_notification():
+    # Your Account Sid and Auth Token from twilio.com/console
+    account_sid = 'AC6dd084097904f1cf92ad8bc2b358fa87'
+    auth_token = '113f188d5e893c3b3abaea5e6a0ccd40'
+    client = Client(account_sid, auth_token)
+
+    message = client.messages.create(
+        body="Your order was successfully processed as of " + str(datetime.datetime.now()),
+        from_='+16176185707',
+        to='+16173350541'
+    )
+
+    print(message.sid)

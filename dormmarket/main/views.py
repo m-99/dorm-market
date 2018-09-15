@@ -23,6 +23,7 @@ headers = {
 # first thing that user sees -> browse
 def index(request):
     items = Order.objects.order_by('-time_posted')[:9]
+    print(items)
     # items = [
     #             {"image": "test.png", "name":"Fridge", "price":"50"},
     #             {"image": "test.png", "name":"Fridge", "price":"50"},
@@ -52,7 +53,7 @@ def signup(request):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
-            return redirect('')
+            return redirect('index')
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
@@ -90,10 +91,10 @@ def submit_buy(request):
                                                 type=params['type'],
                                                 image_url=params['image_url'])
             print(order)
-            return redirect('')
+            return redirect('index')
         else:
             print("Please Log in")
-            return redirect('')
+            return redirect('index')
     else:
         return HttpResponse("hey bb ur at submit_buy")
 
@@ -113,10 +114,10 @@ def submit_sell(request):
                                                 type=params['type'],
                                                 image_url=params['image_url'])
             print(order)
-            return redirect('')
+            return redirect('index')
         else:
             print("Please Log in")
-            return redirect('')
+            return redirect('index')
     else:
         return HttpResponse("hey bb ur at submit_sell")
 
@@ -128,11 +129,12 @@ def trade_list(request):
         order_set = profile.order_set.all()
 
         print(order_set)
-        items = []
-        for order in order_set:
-            items.append({"image": str(order.image_url),
-                          "name": str(order.item_name),
-                          "price": str(order.item_price)})
+        # items = []
+        # for order in order_set:
+        #     items.append({"image": str(order.image_url),
+        #                   "name": str(order.item_name),
+        #                   "price": str(order.item_price)})
+        items = order_set
 
         rows = []
         for i in range(len(items)):

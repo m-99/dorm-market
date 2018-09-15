@@ -64,8 +64,13 @@ def signup(request):
 def debug(request):
     if request.user.is_authenticated:
         user_object = User.objects.get(username=request.user.username)
-        order = models.Order.objects.create(trader_name=user_object.profile, item_name="<item_name>", type="b",
-                                            image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg")
+        order = models.Order.objects.create(trader_name=user_object.profile,
+                                            market_name="fridge",
+                                            item_name="fridge huge drifdege",
+                                            description="HUGE",
+                                            image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg",
+                                            order_id="asdsd",
+                                            time_posted="now")
         print(order.item_name)
         print(request.user.profile.order_set.all())
     else:
@@ -249,3 +254,34 @@ def sell(request):
     else:
         form = SellForm()
         return render(request, 'main/sell.html', {'form': form})
+
+
+def get_order_book(request):
+    if True or request.method == 'POST':
+        side = 'bids'
+        params = {
+
+        }
+
+        # body = json.dumps({
+        #     'price': price,
+        #     'qty': quantity,
+        #     'userId': user_id,
+        # })
+
+        try:
+            r = requests.get(
+                'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/' + side + '/',
+                params=params, headers=headers)
+            print(r)
+            info = r.json()['data']
+            print(info)
+            print(len(info))
+            print()
+            print(len(info[0]))
+        except Exception as e:
+            print("Request to API failed: " + e)
+
+        return render(request, 'main/view_market.html')
+    else:
+        return render(request, 'main/view_market.html')

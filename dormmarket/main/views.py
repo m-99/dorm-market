@@ -6,23 +6,26 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from . import models
-from .models import Order
 from main.access_id import ACCESS_ID
+from .models import Order
+
+from . import models
 import requests
 from .forms import SellForm
 import json
 
 conditions = ['poor', 'okay', 'good', 'new']
 headers = {
-		  'Content-Type': 'application/json',
-		  'Accept': 'application/json',
-		  'Authorization': 'Bearer ' + ACCESS_ID,
-		}
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': 'Bearer ' + ACCESS_ID,
+}
+
 
 # first thing that user sees -> browse
 def index(request):
     items = Order.objects.order_by('-time_posted')[:9]
+    print(items)
     # items = [
     #             {"image": "test.png", "name":"Fridge", "price":"50"},
     #             {"image": "test.png", "name":"Fridge", "price":"50"},
@@ -52,7 +55,7 @@ def signup(request):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
-            return redirect('')
+            return redirect('index')
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
@@ -90,10 +93,10 @@ def submit_buy(request):
                                                 type=params['type'],
                                                 image_url=params['image_url'])
             print(order)
-            return redirect('')
+            return redirect('index')
         else:
             print("Please Log in")
-            return redirect('')
+            return redirect('index')
     else:
         return HttpResponse("hey bb ur at submit_buy")
 
@@ -113,10 +116,10 @@ def submit_sell(request):
                                                 type=params['type'],
                                                 image_url=params['image_url'])
             print(order)
-            return redirect('')
+            return redirect('index')
         else:
             print("Please Log in")
-            return redirect('')
+            return redirect('index')
     else:
         return HttpResponse("hey bb ur at submit_sell")
 
@@ -128,11 +131,12 @@ def trade_list(request):
         order_set = profile.order_set.all()
 
         print(order_set)
-        items = []
-        for order in order_set:
-            items.append({"image": str(order.image_url),
-                          "name": str(order.item_name),
-                          "price": str(order.item_price)})
+        # items = []
+        # for order in order_set:
+        #     items.append({"image": str(order.image_url),
+        #                   "name": str(order.item_name),
+        #                   "price": str(order.item_price)})
+        items = order_set
 
         rows = []
         for i in range(len(items)):
@@ -150,95 +154,98 @@ def trade_list(request):
 
 
 def sell(request):
-	if request.method == 'POST':
-		# get the form info
-		market = request.POST['market']
-		condition = request.POST['condition']
-		#tags = request.POST['tags']
-		description = request.POST['description']
-		price = int(request.POST['price'])
-		quantity = 1
+    if request.method == 'POST':
+        # get the form info
+        market = request.POST['market']
+        condition = request.POST['condition']
+        # tags = request.POST['tags']
+        description = request.POST['description']
+        price = int(request.POST['price'])
+        quantity = 1
 
-		user_id = 'luke_test_user_id'
-		
-		
-		
+        user_id = 'luke_test_user_id'
 
-		r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers)
+        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={},
+                         headers=headers)
 
-		print(r.json()['data'])
+        print(r.json()['data'])
 
-		# Check that a market exists
-		if market not in [market['marketName'] for market in r.json()['data']]:
-			# Create the market if it doesn't
-			params = {
-			}
+        # Check that a market exists
+        if market not in [market['marketName'] for market in r.json()['data']]:
+            # Create the market if it doesn't
+            params = {
+            }
 
-			body = json.dumps({
-					'name': market,
-					'attributes': {
-						'condition': 'text',
-						'description': 'text',
-					},
-				})
+            body = json.dumps({
+                'name': market,
+                'attributes': {
+                    'condition': 'text',
+                    'description': 'text',
+                },
+            })
 
-			# Creates the market
-			r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params = params, data=body, headers = headers)
+            # Creates the market
+            r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
+                              params=params, data=body, headers=headers)
 
-			print(r.json())
-			market_id = r.json()['data']
+            print(r.json())
+            market_id = r.json()['data']
 
-			# Make new assets for each condition
-			for condition in conditions:
-				body = json.dumps({
-					"assetName": condition + market,
-					"attributes": {
-						"condition": condition
-					},
-				})
+            # Make new assets for each condition
+            for condition in conditions:
+                body = json.dumps({
+                    "assetName": condition + market,
+                    "attributes": {
+                        "condition": condition
+                    },
+                })
 
-				# POST new asset
-				r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/%s/' % (market_id,), params = {}, data=body, headers = headers)
+                # POST new asset
+                r = requests.post(
+                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/%s/' % (market_id,),
+                    params={}, data=body, headers=headers)
 
-			# Get new markets
-			r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers)
-		
-		# Map market names to IDS
-		markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-		
-		market_id = markets[market]
+            # Get new markets
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
+                             params={}, headers=headers)
 
-		print('MARKET ID', market_id)
+        # Map market names to IDS
+        markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
 
-		# Get asset for correct condition
-		r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
-			"queries": ['"condition" = \'' + condition + '\'']
-		}, headers = headers)
+        market_id = markets[market]
 
-		print('ASSETS:', r.json())
+        print('MARKET ID', market_id)
 
-		asset_id = r.json()['data'][0]
+        # Get asset for correct condition
+        r = requests.get(
+            'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (
+                market_id,), params={
+                "queries": ['"condition" = \'' + condition + '\'']
+            }, headers=headers)
 
-		print('ASSET_ID:', asset_id)
+        print('ASSETS:', r.json())
 
+        asset_id = r.json()['data'][0]
 
-		# Post new listing
-		params = {
-			'assetId': asset_id,
-		}
-		
-		body = json.dumps({
-			'price': price,
-			'qty': quantity,
-			'userId': user_id,
-		})
+        print('ASSET_ID:', asset_id)
 
-		r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/%s/' % (market_id,), params = params, data=body, headers = headers)
+        # Post new listing
+        params = {
+            'assetId': asset_id,
+        }
 
-		# Return a redirect to your post
+        body = json.dumps({
+            'price': price,
+            'qty': quantity,
+            'userId': user_id,
+        })
 
+        r = requests.post(
+            'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/%s/' % (market_id,),
+            params=params, data=body, headers=headers)
 
-	
-	else:
-		form = SellForm()
-		return render(request, 'main/sell.html', {'form': form})
+    # Return a redirect to your post
+
+    else:
+        form = SellForm()
+        return render(request, 'main/sell.html', {'form': form})

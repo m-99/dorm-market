@@ -13,11 +13,11 @@ class Profile(models.Model):
 
 class Order(models.Model):
     trader_name = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    item_name = models.TextField(max_length=500, blank=True)
-    item_price = models.TextField(max_length=500, blank=True)
-    image_url = models.TextField(max_length=500, blank=True)
-    item_type = models.CharField(max_length=1, blank=True)
-    price = models.IntegerField(default=0)
+    market_name = models.CharField(max_length=500, blank=True)
+    item_name = models.CharField(max_length=500, blank=True)
+    description = models.CharField(max_length=500, blank=True)
+    image_url = models.CharField(max_length=500, blank=True)
+    order_id = models.CharField(max_length=500, blank=True)
     time_posted = models.DateTimeField(auto_now_add=True, blank=True)
 
 

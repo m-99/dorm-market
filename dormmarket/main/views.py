@@ -6,7 +6,12 @@ from django.shortcuts import render, redirect
 
 # first thing that user sees -> browse
 def index(request):
-    return HttpResponse("hey bb ur at the main index")
+    context = {
+        "items":[
+                {"image": "test.png", "name":"Fridge", "price":"50"}
+            ]
+    }
+    return render(request, 'main/index.html', context)
 
 def signup(request):
     if request.method == 'POST':

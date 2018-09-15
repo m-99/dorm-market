@@ -20,6 +20,16 @@ body {
     z-index: 5;
 }
 
+a:link {
+    text-decoration: none;
+    color: white;
+}
+
+a:visited {
+    text-decoration: none;
+    color: white;
+}
+
 .highlight {
     color: #ff8400;
     background-color: white;

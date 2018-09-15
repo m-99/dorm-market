@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from . import models
+from .models import Order
 from main.access_id import ACCESS_ID
 import requests
 from .forms import SellForm

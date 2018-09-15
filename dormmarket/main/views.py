@@ -1,6 +1,5 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-<<<<<<< dc79ebffe3d9dbdf55ff64b0ddd1a513bfbe09e0
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse

@@ -94,7 +94,10 @@ def index(request):
             
             assets[asset['assetName']+"_img"] = "test.png"
             if asset['assetId'] in orders:
-                assets[asset['assetName']+"_img"] = orders[asset['assetId']][0]+".jpg"
+                filtered_orders = Order.objects.filter(order_id=orders[asset['assetId']][0])
+                if len(filtered_orders) > 0:
+                    url = [0].image.url
+                    assets[asset['assetName']+"_img"] = url
         market_assets[market] = assets
 
 

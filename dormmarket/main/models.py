@@ -12,7 +12,7 @@ class Profile(models.Model):
     email = models.EmailField(max_length=254, blank=True)
 
 class Order(models.Model):
-    # trader_name = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    trader_name = models.ForeignKey(Profile, on_delete=models.CASCADE)
     market_name = models.CharField(max_length=500, blank=True)
     item_name = models.CharField(max_length=500, blank=True)
     description = models.CharField(max_length=500, blank=True)

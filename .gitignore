@@ -107,3 +107,4 @@ venv.bak/
 dormmarket/dormmarket/secret_key.txt
 *api_test.py
 *.idea
+*mailconfig.py

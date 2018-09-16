@@ -10,6 +10,7 @@ from django.urls import reverse
 from main.access_id import ACCESS_ID
 from twilio.rest import Client
 
+from . import mail
 from .forms import *
 from .models import *
 
@@ -23,7 +24,8 @@ headers = {
 
 # first thing that user sees -> browse
 def index(request):
-    items = Order.objects.order_by('-time_posted')[:9]
+    items = Order.objects.order_by('-time_posted').filter(notified="N").exclude(image__isnull=True)[:9]
+
     rows = []
     for i in range(len(items)):
         if i % 3 == 0:
@@ -396,15 +398,15 @@ def check_order_filled(request):
                         order.notified = "Y"
                         order.save()
                         print("Phone Number?: ", order.trader_name.phone_number)
-                        send_notification(order.trader_name.phone_number)
+                        send_notification(str(order.trader_name.phone_number), str(order.trader_name.email))
 
     except Exception as e:
-        print("Request to API failed: " + e)
+        print("Request to API failed: " + str(e))
 
     return False
 
 
-def send_notification(target_number):
+def send_notification(target_number, target_mail):
     account_sid = 'AC6dd084097904f1cf92ad8bc2b358fa87'
     auth_token = '113f188d5e893c3b3abaea5e6a0ccd40'
     client = Client(account_sid, auth_token)
@@ -413,8 +415,20 @@ def send_notification(target_number):
         message = client.messages.create(
             body="Your DormMarket order was successfully processed as of " + str(datetime.datetime.now()),
             from_='+16176185707',
-            to='+1' + str(target_number)
+            to='+1' + target_number
         )
         print("SMS sent: ", message.sid)
     except:
         print("Invalid phone number or something")
+
+    try:
+        mail.send_mail(target_mail, "Your DormMarket order was successfully processed!",
+                       """
+                       Dear John,
+                           Congratulation! Your DormMarket order has been completed!
+                        
+                       Regards,
+                            DormMarket Team
+                       """)
+    except Exception as e:
+        print("Invalid email or something:" + str(e))

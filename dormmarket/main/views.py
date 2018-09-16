@@ -122,13 +122,16 @@ def sell(request):
 
     if request.method == 'POST':
         # get the form info
-        market = request.POST['market_name']
+        if request.POST['market_name'] == 'other':
+            market = request.POST['market-other']
+        else:
+            market = request.POST['market_name']
         condition = request.POST['condition']
         description = request.POST['description']
         price = int(request.POST['price'])
         quantity = 1
 
-        user_id = 'luke_test_user_id'
+        user_id = request.user.pk
         
 
         # Check that a market exists
@@ -244,25 +247,30 @@ def sell(request):
         return render(request, 'main/sell_new.html', context)
 
 def buy(request):
+
+    # Get all markets
+    while True:
+        try:
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout=0.1)
+            break
+        except:
+            pass
+    
+    markets = r.json()['data']
+
+
     if request.method == 'POST':
         # get the form info
-        market = request.POST['market']
+        market = request.POST['market_name']
         condition = request.POST['condition']
-        description = request.POST['description']
         price = int(request.POST['price'])
         quantity = 1
 
-        user_id = 'luke_test_user_id_buy'
+        user_id = request.user.pk
         
-        
-        
-        # Get markets
-        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers)
-
-        print(r.json()['data'])
 
         # Check that a market exists
-        if market not in [market['marketName'] for market in r.json()['data']]:
+        if market not in [market['marketName'] for market in markets]:
             # Market doesn't exist
             print('market not found')
             return None
@@ -278,9 +286,14 @@ def buy(request):
         # Get asset for correct condition
         # Make a BUY request for every condition <= condition
 
-        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
-            "queries": ['"condition" = \'' + conditions + '\'']
-        }, headers = headers)
+        while True:
+            try:
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
+                    "queries": ['"condition" = \'' + condition + '\'']
+                }, headers = headers)
+                break
+            except:
+                pass
 
         asset_id = r.json()['data'][0]
 
@@ -297,15 +310,28 @@ def buy(request):
             'userId': user_id,
         })
 
-        r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
+        while True:
+            try:
+                r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
+                break
+            except:
+                pass
 
-        # Return a redirect to your buys
+        # Make an Order object linked to the user
+        order_id = r.json()['data']['order']['_id']
+
+        order = Order(trader_name = request.user.profile, market_name = market, order_id = order_id)
+        order.save()
+
         check_order_filled(request)
+
+        return HttpResponseRedirect(reverse('index'))
 
     
     else:
-        form = BuyForm()
-        return render(request, 'main/buy.html', {'form': form})
+        context = dict()
+        context['markets'] = markets
+        return render(request, 'main/buy.html', context)
 
 
 def get_order_book(request):

@@ -1,13 +1,54 @@
-{% extends 'base.html' %}
-
+{% extends 'main/templates/main/base.html' %}
 {% load static %}
 
-{% block styles%}{% endblock %}
+{% block title %}
+	Dorm Market - Buy Item
+{% endblock %}
 
 {% block content %}
-<form action="" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit">
-</form>
+
+
+
+<div class="row" style="height: 100%">
+	<div class="col-12">
+		<form action='' method='post'>
+			{% csrf_token %}
+			<div class="form-group row">
+				<label for="market_name" class="col-4 col-form-label">Market/Item Category</label> 
+				<div class="col-8">
+			  		<select class="form-control" id="market_name" name="market_name">
+			  			{% for market in markets %}
+			  			<option value='{{ market.marketName|escape }}'>{{ market.marketName }}</option>
+			  			{% endfor %}
+			  		</select>
+				</div>
+			</div> 
+			<div class="form-group row">
+				<label for="condition" class="col-4 col-form-label">Condition</label> 
+				<div class="col-8">
+			  		<select class="form-control" id="condition" name="condition">
+			  			<option value='poor'>Poor</option>
+			  			<option value='okay'>Okay</option>
+			  			<option value="good">Good</option>
+			  			<option value="new">New</option>
+			  		</select>
+				</div>
+			</div> 
+			<div class="form-group row">
+				<label for="price" class="col-4 col-form-label">Maximum Price (dollars)</label> 
+				<div class="col-8">
+			  		<input id="price" name="price" type="number" class="form-control here">
+				</div>
+			</div> 
+			<div class="form-group row">
+				<div class="offset-4 col-8">
+			  		<button name="submit" type="submit" class="btn btn-primary">Submit</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+
 {% endblock %}
+

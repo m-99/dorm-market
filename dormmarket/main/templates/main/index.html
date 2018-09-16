@@ -20,7 +20,7 @@
             {% for item in row %}
             <td valign='bottom' width='32.5%'>
                 <div class='item_cell'>
-                    <div class='item_image'><img src='{{ item.image }}' width='75%'></div>
+                    <div class='item_image'><img src='{{ item.image.url }}' width='75%'></div>
                     <br>{{ item.item_name }}<font color='#BBBBBB'> &bull;</font><font color='#11BB77'> ${{ item.price }}</font>
                 </div>
             </td>

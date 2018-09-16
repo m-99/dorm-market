@@ -48,6 +48,7 @@ def index(request):
         market_objects.append([market_obj['marketName']])
 
     # for each market, find all asset ids
+    print(unique_markets)
     market_asset_ids = {}
     for market in unique_markets:
         asset_ids = callAPI('assets/get_assets/'+market_ids[market]+'/', {})['data']
@@ -59,16 +60,27 @@ def index(request):
         asset_objects = callAPI('assets/get_assets_by_ids/'+market_ids[market]+'/', {'assetId': market_asset_ids[market]})['data']
         assets = {}
         for asset in asset_objects:
-            asset_price = callAPI('orders/asks/lowest_ask', {'assetId': asset['assetId']})['data']
-            price = 0
-            try:
-                price = asset_price[0]['price']
-            except:
-                price = 0
+            # Get best price
+            print(asset)
+            if asset['marketPrice']:
+                price = asset['marketPrice']
+            else:
+                while True:
+                    try:
+                        # get lowest asking price
+                        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset['assetId']}, headers = headers, timeout = 0.1)
+                        #print(r.json())
+                        if r.json()['message'] != 'OK':
+                            price = 0
+                            break
+                        else:
+                            price = int(r.json()['data']['price'])
+                        break
+                    except:
+                        pass
             assets[asset['assetName']] = price
         market_assets[market] = assets
 
-    print(market_assets)
 
     # organizes markets to display into rows
     rows = []
@@ -473,3 +485,56 @@ def send_notification(target_number, target_mail):
                        """)
     except Exception as e:
         print("Invalid email or something:" + str(e))
+
+
+
+def buy_now(request, asset_id):
+    user_id = str(request.user.pk)
+    market_id = request.POST['market-id']
+
+    # Get best price
+    while True:
+        try:
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets_by_ids/%s/' % (market_id,), params={'assetId': '5b9dcec13b80ed4131840af0'}, headers=headers, timeout= 0.1)
+            if int(r.json()['data'][0]['marketPrice']) == 0:
+                # get lowest asking price
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset_id}, headers = headers, timeout = 0.1)
+                price = int(r.json()['data']['price'])
+            else:
+                price = int(r.json()['data'][0]['marketPrice'])
+            break
+        except:
+            pass
+
+    # Post new listing
+    params = {
+        'assetId': asset_id,
+    }
+    
+    body = json.dumps({
+        'price': price,
+        'qty': quantity,
+        'userId': user_id,
+    })
+
+    while True:
+        try:
+            r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
+            break
+        except:
+            pass
+
+    print(r.json())
+
+    # Make an Order object linked to the user
+    if r.json()['message'] != 'Order filled!':
+        order_id = r.json()['data']['order']['_id']
+    else:
+        order_id = r.json()['data']['order']['orderId']
+
+    order = Order(trader_name=request.user.profile, market_name=market, order_id=order_id)
+    order.save()
+
+    check_order_filled(request)
+
+    return HttpResponseRedirect(reverse('index'))

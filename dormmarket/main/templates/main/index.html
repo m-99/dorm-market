@@ -11,12 +11,15 @@
 
 <script>
     var marketProperties = {
-        {% if markets%}
-        {% for market in markets %}
-        "{{ market.0 }}": [{{ assets.market }}],
+        {% if markets %}
+        {% for market, assets in assets.items %}
+        "{{ market }}": {{ assets|safe }},
         {% endfor %}
-        {% endif %}
+        {% endif %} 
     };
+
+    
+
 
     function showMarketView(market_type) {
         var x = document.getElementById("marketView");

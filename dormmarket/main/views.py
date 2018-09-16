@@ -34,6 +34,20 @@ def callAPI(api_path, params):
         except:
             pass
 
+def asset_exists_for_market(market, market_assets):
+    print(market_assets[market[0]])
+        
+    if type(market_assets[market[0]]['poor']) == type(""):
+        return True
+    elif type(market_assets[market[0]]['okay']) == type(""):
+        return True
+    elif type(market_assets[market[0]]['good'])  == type(""):
+        return True
+    elif type(market_assets[market[0]]['new'])  == type(""):
+        return True
+
+    return False
+
 # first thing that user sees -> browse
 def index(request):
 
@@ -48,7 +62,6 @@ def index(request):
         market_objects.append([market_obj['marketName']])
 
     # for each market, find all asset ids
-    print(unique_markets)
     market_asset_ids = {}
     for market in unique_markets:
         asset_ids = callAPI('assets/get_assets/'+market_ids[market]+'/', {})['data']
@@ -61,7 +74,6 @@ def index(request):
         assets = {}
         for asset in asset_objects:
             # Get best price
-            print(asset)
             if asset['marketPrice']:
                 price = asset['marketPrice']
             else:
@@ -84,11 +96,14 @@ def index(request):
 
     # organizes markets to display into rows
     rows = []
+    items_added = 0
     for i in range(len(market_objects)):
-        if i % 3 == 0:
-            rows.append([market_objects[i]])
-        else:
-            rows[i // 3].append(market_objects[i])
+        if asset_exists_for_market(market_objects[i], market_assets) == True:
+            if i % 3 == 0:
+                rows.append([market_objects[i]])
+            else:
+                rows[items_added // 3].append(market_objects[i])
+            items_added += 1
     context = {
         "rows": rows,
         "markets": market_objects,

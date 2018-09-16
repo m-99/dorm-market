@@ -105,6 +105,9 @@ venv.bak/
 
 # django secret key
 dormmarket/dormmarket/secret_key.txt
+
 *api_test.py
 *.idea
 *mailconfig.py
+
+dormmarket/media/

@@ -35,18 +35,16 @@ def callAPI(api_path, params):
             pass
 
 def asset_exists_for_market(market, market_assets):
-    if type(market_assets[market[0]]['poor']) == type(""):
-        if int(market_assets[market[0]]['poor']) > 0:
-            return True
-    elif type(market_assets[market[0]]['okay']) == type(""):
-        if int(market_assets[market[0]]['okay']) > 0:
-            return True
-    elif type(market_assets[market[0]]['good'])  == type(""):
-        if int(market_assets[market[0]]['good']) > 0:
-            return True
-    elif type(market_assets[market[0]]['new'])  == type(""):
-        if int(market_assets[market[0]]['new']) > 0:
-            return True
+    # print(market[0])
+    # print(market_assets)
+    if market_assets[market[0]]['poor'] > 0:
+        return True
+    elif market_assets[market[0]]['okay'] > 0:
+        return True
+    elif market_assets[market[0]]['good'] > 0:
+        return True
+    elif market_assets[market[0]]['new'] > 0:
+        return True
 
     return False
 

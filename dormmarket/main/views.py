@@ -1,19 +1,22 @@
 import datetime
 import json
-import time
-
 import requests
-from django.contrib.auth import login, authenticate
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from main.access_id import ACCESS_ID
+import datetime
+import time
 from twilio.rest import Client
 
-from . import mail
-from . import models
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from main.access_id import ACCESS_ID
+from django.urls import reverse
+
 from .forms import *
 from .models import *
+from . import models
+from . import mail
 
 conditions = ['poor', 'okay', 'good', 'new', ]
 headers = {
@@ -22,86 +25,85 @@ headers = {
     'Authorization': 'Bearer ' + ACCESS_ID,
 }
 
-from django.views.decorators.csrf import csrf_exempt
-
-# first thing that user sees -> browse
-def index(request):
-    # loads all market ids
-    unique_markets = []
-    market_objects = []
-    market_ids = {}
+def callAPI(api_path, params):
     while True:
         try:
-            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
-                             params={}, headers=headers, timeout=0.1)
-            data = r.json()['data']
-            for market_obj in data:
-                market_ids[market_obj['marketName']] = market_obj['marketId']
-                unique_markets.append(market_obj['marketName'])
-                market_objects.append([market_obj['marketName']])
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/'+api_path, params=params, headers = headers, timeout = 0.1)
+            return r.json()
             break
         except:
             pass
 
+def asset_exists_for_market(market, market_assets):
+    print(market_assets[market[0]])
+        
+    if type(market_assets[market[0]]['poor']) == type(""):
+        return True
+    elif type(market_assets[market[0]]['okay']) == type(""):
+        return True
+    elif type(market_assets[market[0]]['good'])  == type(""):
+        return True
+    elif type(market_assets[market[0]]['new'])  == type(""):
+        return True
+
+    return False
+
+# first thing that user sees -> browse
+def index(request):
+
+    # loads all market ids
+    unique_markets = []
+    market_objects = []
+    market_ids = {}
+    data = callAPI("markets/", {})['data']
+    for market_obj in data:
+        market_ids[market_obj['marketName']] = market_obj['marketId']
+        unique_markets.append(market_obj['marketName'])
+        market_objects.append([market_obj['marketName']])
+
     # for each market, find all asset ids
     market_asset_ids = {}
     for market in unique_markets:
-        while True:
-            try:
-                r = requests.get(
-                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/' +
-                    market_ids[market] + '/', params={}, headers=headers, timeout=0.1)
-                asset_ids = r.json()['data']
-                market_asset_ids[market] = asset_ids
-                break
-            except:
-                pass
+        asset_ids = callAPI('assets/get_assets/'+market_ids[market]+'/', {})['data']
+        market_asset_ids[market] = asset_ids
 
     # loads asset information for each market
     market_assets = {}
     for market in unique_markets:
-        while True:
-            try:
-                r = requests.get(
-                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets_by_ids/' +
-                    market_ids[market] + '/', params={
-                        'assetId': market_asset_ids[market]
-                    }, headers=headers, timeout=0.1)
-                break
-            except:
-                pass
-        asset_objects = r.json()['data']
+        asset_objects = callAPI('assets/get_assets_by_ids/'+market_ids[market]+'/', {'assetId': market_asset_ids[market]})['data']
         assets = {}
         for asset in asset_objects:
-            while True:
-                try:
-                    r = requests.get(
-                        'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask',
-                        params={
-                            'assetId': asset['assetId']
-                        }, headers=headers, timeout=0.1)
-                    asset_price = r.json()['data']
-                    break
-                except:
-                    pass
-
-            price = 0
-            try:
-                price = asset_price[0]['price']
-            except:
-                price = 0
+            # Get best price
+            if asset['marketPrice']:
+                price = asset['marketPrice']
+            else:
+                while True:
+                    try:
+                        # get lowest asking price
+                        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset['assetId']}, headers = headers, timeout = 0.1)
+                        #print(r.json())
+                        if r.json()['message'] != 'OK':
+                            price = 0
+                            break
+                        else:
+                            price = int(r.json()['data']['price'])
+                        break
+                    except:
+                        pass
             assets[asset['assetName']] = price
         market_assets[market] = assets
 
-    print(market_assets)
 
     # organizes markets to display into rows
     rows = []
+    items_added = 0
     for i in range(len(market_objects)):
-        if i % 3 == 0:
-            rows.append([market_objects[i]])
-        else:
-            rows[i // 3].append(market_objects[i])
+        if asset_exists_for_market(market_objects[i], market_assets) == True:
+            if i % 3 == 0:
+                rows.append([market_objects[i]])
+            else:
+                rows[items_added // 3].append(market_objects[i])
+            items_added += 1
     context = {
         "rows": rows,
         "markets": market_objects,
@@ -110,11 +112,9 @@ def index(request):
     return render(request, 'main/index.html', context)
 
 
-@csrf_exempt
 def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
-        print(request.POST)
         if form.is_valid():
             form.save()
             username = form.cleaned_data.get('username')
@@ -133,21 +133,17 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 
-@csrf_exempt
 def debug(request):
     if request.user.is_authenticated:
         user_object = User.objects.get(username=request.user.username)
-
-        r = requests.post(
-            request.build_absolute_uri(reverse('sell')), params={
-                'market_name': 'other',
-                'market-other': 'fridge',
-                'condition': 'new',
-                'description': 'Good item. Please purchase.',
-                'price': '20'
-            }, headers=headers, timeout=0.1)
-
-        print(r.json())
+        order = models.Order.objects.create(trader_name=user_object.profile,
+                                            market_name="fridge",
+                                            item_name="fridge huge drifdege",
+                                            description="HUGE",
+                                            image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg",
+                                            order_id="asdsd",
+                                            time_posted="now")
+        print(order.item_name)
         print(request.user.profile.order_set.all())
     else:
         print("Please Log in")
@@ -189,17 +185,15 @@ def trade_list(request):
     return render(request, 'user_info.html')
 
 
-@csrf_exempt
 def sell(request):
     # Get all markets
     while True:
         try:
-            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
-                             params={}, headers=headers, timeout=0.1)
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout=0.1)
             break
         except:
             pass
-
+    
     markets = r.json()['data']
 
     if request.method == 'POST':
@@ -214,6 +208,7 @@ def sell(request):
         quantity = 1
 
         user_id = str(request.user.pk)
+       
 
         # Check that a market exists
         if market not in [market['marketName'] for market in markets]:
@@ -222,25 +217,24 @@ def sell(request):
             }
 
             body = json.dumps({
-                'name': market,
-                'attributes': {
-                    'condition': 'text',
-                },
-            })
+                    'name': market,
+                    'attributes': {
+                        'condition': 'text',
+                    },
+                })
 
             # Creates the market
             while True:
                 try:
-                    r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
-                                      params=params, data=body, headers=headers, timeout=0.1)
+                    r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params = params, data=body, headers = headers, timeout=0.1)
                     break
                 except:
                     pass
 
-            # print(r.json())
+            #print(r.json())
             market_id = r.json()['data']
 
-            # print(conditions)
+            #print(conditions)
 
             # Make new assets for each condition
             for condition in conditions:
@@ -254,9 +248,7 @@ def sell(request):
                 # POST new asset
                 while True:
                     try:
-                        r = requests.post(
-                            'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/%s/' % (
-                                market_id,), params={}, data=body, headers=headers, timeout=0.1)
+                        r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/%s/' % (market_id,), params = {}, data=body, headers = headers, timeout=0.1)
                         break
                     except:
                         pass
@@ -264,15 +256,14 @@ def sell(request):
             # Get new markets
             while True:
                 try:
-                    r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
-                                     params={}, headers=headers, timeout=0.1)
+                    r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout=0.1)
                     break
                 except:
                     pass
-
+        
         # Map market names to IDS
         markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-
+        
         # Get market ID
         market_id = markets[market]
 
@@ -281,11 +272,9 @@ def sell(request):
         # Get asset for correct condition
         while True:
             try:
-                r = requests.get(
-                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (
-                        market_id,), params={
-                        "queries": ['"assetName" = \'' + condition + '\'']
-                    }, headers=headers, timeout=0.1)
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
+                    "queries": ['"assetName" = \'' + condition + '\'']
+                }, headers = headers, timeout = 0.1)
                 break
             except:
                 pass
@@ -300,7 +289,7 @@ def sell(request):
         params = {
             'assetId': asset_id,
         }
-
+        
         body = json.dumps({
             'price': price,
             'qty': quantity,
@@ -309,9 +298,7 @@ def sell(request):
 
         while True:
             try:
-                r = requests.post(
-                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/%s/' % (
-                        market_id,), params=params, data=body, headers=headers, timeout=0.1)
+                r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/%s/' % (market_id,), params = params, data=body, headers = headers, timeout = 0.1)
                 break
             except:
                 pass
@@ -324,7 +311,7 @@ def sell(request):
             order_id = r.json()['data']['order']['orderId']
         form = SellForm({'description': description, 'market_name': market, "order_id": order_id}, request.FILES)
         if form.is_valid():
-            order = form.save(commit=False)
+            order = form.save(commit = False)
             order.trader_name = request.user.profile
             order.save()
             check_order_filled(request)
@@ -332,24 +319,24 @@ def sell(request):
         else:
             print('form not valid')
 
-
+    
     else:
         context = dict()
         context['markets'] = markets
         return render(request, 'main/sell_new.html', context)
 
-
 def buy(request):
+
     # Get all markets
     while True:
         try:
-            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
-                             params={}, headers=headers, timeout=0.1)
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout=0.1)
             break
         except:
             pass
-
+    
     markets = r.json()['data']
+
 
     if request.method == 'POST':
         # get the form info
@@ -359,16 +346,17 @@ def buy(request):
         quantity = 1
 
         user_id = str(request.user.pk)
+        
 
         # Check that a market exists
         if market not in [market['marketName'] for market in markets]:
             # Market doesn't exist
             print('market not found')
             return None
-
+                    
         # Map market names to IDS
         markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-
+        
         # Get market ID
         market_id = markets[market]
 
@@ -379,11 +367,9 @@ def buy(request):
 
         while True:
             try:
-                r = requests.get(
-                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (
-                        market_id,), params={
-                        "queries": ['"assetName" = \'' + condition + '\'']
-                    }, headers=headers)
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
+                    "queries": ['"assetName" = \'' + condition + '\'']
+                }, headers = headers)
                 break
             except:
                 pass
@@ -397,7 +383,7 @@ def buy(request):
         params = {
             'assetId': asset_id,
         }
-
+        
         body = json.dumps({
             'price': price,
             'qty': quantity,
@@ -406,9 +392,7 @@ def buy(request):
 
         while True:
             try:
-                r = requests.post(
-                    'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (
-                        market_id,), params=params, data=body, headers=headers)
+                r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
                 break
             except:
                 pass
@@ -524,3 +508,56 @@ Regards,
                        )
     except Exception as e:
         print("Invalid email or something:" + str(e))
+
+
+
+def buy_now(request, asset_id):
+    user_id = str(request.user.pk)
+    market_id = request.POST['market-id']
+
+    # Get best price
+    while True:
+        try:
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets_by_ids/%s/' % (market_id,), params={'assetId': '5b9dcec13b80ed4131840af0'}, headers=headers, timeout= 0.1)
+            if int(r.json()['data'][0]['marketPrice']) == 0:
+                # get lowest asking price
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset_id}, headers = headers, timeout = 0.1)
+                price = int(r.json()['data']['price'])
+            else:
+                price = int(r.json()['data'][0]['marketPrice'])
+            break
+        except:
+            pass
+
+    # Post new listing
+    params = {
+        'assetId': asset_id,
+    }
+    
+    body = json.dumps({
+        'price': price,
+        'qty': quantity,
+        'userId': user_id,
+    })
+
+    while True:
+        try:
+            r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
+            break
+        except:
+            pass
+
+    print(r.json())
+
+    # Make an Order object linked to the user
+    if r.json()['message'] != 'Order filled!':
+        order_id = r.json()['data']['order']['_id']
+    else:
+        order_id = r.json()['data']['order']['orderId']
+
+    order = Order(trader_name=request.user.profile, market_name=market, order_id=order_id)
+    order.save()
+
+    check_order_filled(request)
+
+    return HttpResponseRedirect(reverse('index'))

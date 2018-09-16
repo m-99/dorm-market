@@ -26,14 +26,6 @@ headers = {
 def index(request):
     items = Order.objects.order_by('-time_posted')[:9]
     print(items)
-    # items = [
-    #             {"image": "test.png", "name":"Fridge", "price":"50"},
-    #             {"image": "test.png", "name":"Fridge", "price":"50"},
-    #             {"image": "test.png", "name":"Fan", "price":"50"},
-    #             {"image": "test.png", "name":"Macbook Pro", "price":"50"},
-    #             {"image": "test.png", "name":"Netbook", "price":"50"},
-    #             {"image": "test.png", "name":"TI-84", "price":"50"}
-    #         ]
     rows = []
     for i in range(len(items)):
         if i % 3 == 0:
@@ -90,11 +82,6 @@ def trade_list(request):
         order_set = profile.order_set.all()
 
         print(order_set)
-        # items = []
-        # for order in order_set:
-        #     items.append({"image": str(order.image_url),
-        #                   "name": str(order.item_name),
-        #                   "price": str(order.item_price)})
         items = order_set
 
         rows = []
@@ -324,7 +311,6 @@ def get_order_book(request):
             info = r.json()['data']
             print(info)
             print(len(info))
-            print()
             print(len(info[0]))
         except Exception as e:
             print("Request to API failed: " + e)
@@ -338,17 +324,18 @@ def check_order_filled(request):
     try:
         profile = request.user.profile
         order_set = profile.order_set.all()
+        threshold_time = time.time() * 1000 - 30000
 
         r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/transactions/',
-                         params={}, headers=headers)
-        print("trades: ", r)
-        print("trades: ", r.json())
+                         params={"timestampLower": str(threshold_time)}, headers=headers)
+
+        print("trades: ", r, r.json())
         info = r.json()['data']
-        print(info)
+
         for trade in info:
             print(trade)
-            print(trade['timestamp'], time.time() * 1000 - 30000)
-            if trade['timestamp'] > time.time() * 1000 - 30000:
+            print(trade['timestamp'], threshold_time)
+            if trade['timestamp'] > threshold_time:
                 for order in order_set:
                     print(order)
                     if str(order.order_id) in (trade['askOrderId'], trade['bidOrderId']):
@@ -374,4 +361,4 @@ def send_notification():
         to='+16173350541'
     )
 
-    print(message.sid)
+    print("SMS sent: ", message.sid)

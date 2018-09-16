@@ -1,5 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}Dorm Market{% endblock %}
+{% load static %}
 
-{% block content %}{% endblock %}
+{% block styles %}{% endblock %}
+
+{% block title %}Dorm Market - My Orders{% endblock %}
+
+{% block content %}
+
+{% if sell_orders %}
+<h3>My Sell Orders</h3>
+<table class='table'>
+    <thead class='thead-dark'>
+        <th scope='col'>Item Type</th>
+        <th scope='col'>Date Posted</th>
+        <th scope='col'></th>
+    </thead>
+    <tbody>
+        {% for order in sell_orders %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if buy_orders %}
+<h3>My Buy Orders</h3>
+<table class='table'>
+    <thead class='thead-dark'>
+        <th scope='col'>Item Type</th>
+        <th scope='col'>Date Posted</th>
+        <th scope='col'></th>
+    </thead>
+    <tbody>
+        {% for order in buy_orders %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

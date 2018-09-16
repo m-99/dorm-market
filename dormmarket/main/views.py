@@ -147,32 +147,30 @@ def focused(request):
 
 # view items that you are selling in the marketplace
 def trade_list(request):
-    # if request.user.is_authenticated:
-    #     profile = request.user.profile
-    #     order_set = profile.order_set.all()
+    # get all orders associated with user
+    user_orders = request.user.profile.order_set.all()
+    # sell_orders = user_orders.filter(image__isnull=False).sort_by('-time_posted')
+    # buy_orders = user_orders.filter(image__isnull=True).sort_by('=time_posted')
+    user_order_ids = []
+    for order in user_orders:
+        user_order_ids.append(order.order_id)
 
-    #     print(order_set)
-    #     # items = []
-    #     # for order in order_set:
-    #     #     items.append({"image": str(order.image_url),
-    #     #                   "name": str(order.item_name),
-    #     #                   "price": str(order.item_price)})
-    #     items = order_set
+    # We're pretty sure that /orders/{asks/bids} doesn't work
+    # while True:
+    #     try:
+    #         print(user_order_ids)
+    #         r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks', params={}, headers = headers, timeout = 0.1)
+    #         # order objects in data
+    #         data = r.json()['data']
+    #         break
+    #     except:
+    #         pass
 
-    #     rows = []
-    #     for i in range(len(items)):
-    #         if i % 3 == 0:
-    #             rows.append([items[i]])
-    #         else:
-    #             rows[i // 3].append(items[i])
-    #     context = {
-    #         "rows": rows
-    #     }
-    #     return render(request, 'trade_list.html', context)
-    # else:
-    #     print("Please Log in")
-    #     return render(request, 'trade_list.html')
-    return render(request, 'user_info.html')
+    # prices = {}
+
+    context = {}
+
+    return render(request, 'user_info.html', context)
 
 
 def sell(request):
@@ -183,7 +181,7 @@ def sell(request):
             break
         except:
             pass
-    
+
     markets = r.json()['data']
 
     if request.method == 'POST':
@@ -198,7 +196,6 @@ def sell(request):
         quantity = 1
 
         user_id = str(request.user.pk)
-       
 
         # Check that a market exists
         if market not in [market['marketName'] for market in markets]:
@@ -250,14 +247,14 @@ def sell(request):
                     break
                 except:
                     pass
-        
+
         # Map market names to IDS
         markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-        
+
         # Get market ID
         market_id = markets[market]
 
-        print('MARKET ID', market_id)
+        # print('MARKET ID', market_id)
 
         # Get asset for correct condition
         while True:
@@ -269,17 +266,17 @@ def sell(request):
             except:
                 pass
 
-        print('ASSETS:', r.json())
+        # print('ASSETS:', r.json())
 
         asset_id = r.json()['data'][0]
 
-        print('ASSET_ID:', asset_id)
+        # print('ASSET_ID:', asset_id)
 
         # Post new listing
         params = {
             'assetId': asset_id,
         }
-        
+
         body = json.dumps({
             'price': price,
             'qty': quantity,
@@ -309,7 +306,7 @@ def sell(request):
         else:
             print('form not valid')
 
-    
+
     else:
         context = dict()
         context['markets'] = markets
@@ -324,7 +321,7 @@ def buy(request):
             break
         except:
             pass
-    
+
     markets = r.json()['data']
 
 
@@ -336,21 +333,21 @@ def buy(request):
         quantity = 1
 
         user_id = str(request.user.pk)
-        
+
 
         # Check that a market exists
         if market not in [market['marketName'] for market in markets]:
             # Market doesn't exist
             print('market not found')
             return None
-                    
+
         # Map market names to IDS
         markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-        
+
         # Get market ID
         market_id = markets[market]
 
-        print('MARKET ID', market_id)
+        # print('MARKET ID', market_id)
 
         # Get asset for correct condition
         # Make a BUY request for every condition <= condition
@@ -364,16 +361,16 @@ def buy(request):
             except:
                 pass
 
-        print(r.json())
+        # print(r.json())
         asset_id = r.json()['data'][0]
 
-        print('ASSET_ID:', asset_id)
+        # print('ASSET_ID:', asset_id)
 
         # Post new listing
         params = {
             'assetId': asset_id,
         }
-        
+
         body = json.dumps({
             'price': price,
             'qty': quantity,
@@ -387,7 +384,7 @@ def buy(request):
             except:
                 pass
 
-        print(r.json())
+        # print(r.json())
         # Make an Order object linked to the user
         if r.json()['message'] != 'Order filled!':
             order_id = r.json()['data']['order']['_id']
@@ -518,7 +515,7 @@ def buy_now(request, market_name, condition):
             r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout=0.1)
             # Map market names to IDS
             markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-        
+
             # Get market ID
             market_id = markets[market_name]
 
@@ -557,7 +554,7 @@ def buy_now(request, market_name, condition):
     params = {
         'assetId': asset_id,
     }
-    
+
     body = json.dumps({
         'price': price,
         'qty': quantity,

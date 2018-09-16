@@ -8,17 +8,17 @@ from django.dispatch import receiver
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
+    phone_number = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(max_length=254, blank=True)
 
 class Order(models.Model):
     trader_name = models.ForeignKey(Profile, on_delete=models.CASCADE)
     market_name = models.CharField(max_length=500, blank=True)
     item_name = models.CharField(max_length=500, blank=True)
     description = models.CharField(max_length=500, blank=True)
-    #image_url = models.CharField(max_length=500, blank=True)
     image = models.ImageField(upload_to='order_images/', null=True)
     order_id = models.CharField(max_length=500, blank=True)
+    notified = models.CharField(max_length=1, default="N")
     time_posted = models.DateTimeField(auto_now_add=True, blank=True)
 
 

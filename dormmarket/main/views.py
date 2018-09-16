@@ -40,16 +40,18 @@ def index(request):
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
+            print(user)
+            print(dir(user))
             return redirect('index')
     else:
-        form = UserCreationForm()
+        form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
 
 
@@ -78,7 +80,7 @@ def focused(request):
 # view items that you are selling in the marketplace
 def trade_list(request):
     # if request.user.is_authenticated:
-    #     profile = request.user.profile
+    #      = request.user.profile
     #     order_set = profile.order_set.all()
 
     #     print(order_set)
@@ -336,7 +338,8 @@ def get_order_book(request):
 def check_order_filled(request):
     try:
         profile = request.user.profile
-        order_set = profile.order_set.all()
+        order_set = Order.objects
+        print(order_set)
         threshold_time = time.time() * 1000 - 30000
 
         while True:
@@ -356,10 +359,11 @@ def check_order_filled(request):
             if trade['timestamp'] > threshold_time:
                 for order in order_set:
                     print(order)
-                    if str(order.order_id) in (trade['askOrderId'], trade['bidOrderId']):
+                    if str(order.order_id) in (trade['askOrderId'], trade['bidOrderId']) and order.notified == "N":
                         print("Order was filled and belongs to user. Send notification")
-                        send_notification()
-                        return True
+                        order.notified = "Y"
+                        order.save()
+                        send_notification(order.trader_name.phone_number)
 
 
     except Exception as e:
@@ -368,8 +372,7 @@ def check_order_filled(request):
     return False
 
 
-def send_notification():
-    # Your Account Sid and Auth Token from twilio.com/console
+def send_notification(target_number):
     account_sid = 'AC6dd084097904f1cf92ad8bc2b358fa87'
     auth_token = '113f188d5e893c3b3abaea5e6a0ccd40'
     client = Client(account_sid, auth_token)
@@ -377,7 +380,7 @@ def send_notification():
     message = client.messages.create(
         body="Your DormMarket order was successfully processed as of " + str(datetime.datetime.now()),
         from_='+16176185707',
-        to='+16173350541'
+        to='+1' + target_number
     )
 
     print("SMS sent: ", message.sid)

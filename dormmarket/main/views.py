@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from main.access_id import ACCESS_ID
 
 from . import models
+from .models import Order
 from .forms import *
 
 conditions = ['poor', 'okay', 'good', 'new', ]

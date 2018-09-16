@@ -13,15 +13,16 @@
 <table class='table'>
     <thead class='thead-dark'>
         <th scope='col'>Item Type</th>
+        <th scope='col'>Description</th>
         <th scope='col'>Date Posted</th>
         <th scope='col'></th>
     </thead>
     <tbody>
         {% for order in sell_orders %}
         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td>{{ order.market_name }}</td>
+            <td>{{ order.description}}</td>
+            <td>{{ order.time_posted }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -39,8 +40,8 @@
     <tbody>
         {% for order in buy_orders %}
         <tr>
-            <td></td>
-            <td></td>
+            <td>{{ order.market_name }}</td>
+            <td>{{ order.time_posted }}</td>
             <td></td>
         </tr>
         {% endfor %}

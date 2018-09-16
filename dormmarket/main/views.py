@@ -172,8 +172,12 @@ def focused(request):
 def trade_list(request):
     # get all orders associated with user
     user_orders = request.user.profile.order_set.all()
-    # sell_orders = user_orders.filter(image__isnull=False).sort_by('-time_posted')
-    # buy_orders = user_orders.filter(image__isnull=True).sort_by('=time_posted')
+    sell_orders = user_orders.exclude(description="").filter(notified="N")  # .sort_by('-time_posted')
+    buy_orders = user_orders.filter(description="").filter(notified="N")  # .sort_by('-time_posted')
+
+    print(sell_orders)
+    print(buy_orders)
+
     user_order_ids = []
     for order in user_orders:
         user_order_ids.append(order.order_id)
@@ -191,7 +195,8 @@ def trade_list(request):
 
     # prices = {}
 
-    context = {}
+    context = {'buy_orders': buy_orders,
+               'sell_orders': sell_orders}
 
     return render(request, 'user_info.html', context)
 

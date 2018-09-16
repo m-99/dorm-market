@@ -16,6 +16,7 @@ from django.urls import reverse
 from .forms import *
 from .models import *
 from . import models
+from . import mail
 
 conditions = ['poor', 'okay', 'good', 'new', ]
 headers = {
@@ -115,6 +116,7 @@ def signup(request):
             login(request, user)
             print(request.POST)
             user.profile.phone_number = request.POST['phone_number']
+            user.profile.email = request.POST['email']
             user.profile.save()
             user.save()
             print(dir(user))
@@ -465,16 +467,29 @@ def check_order_filled(request):
     return False
 
 
-def send_notification():
-    # Your Account Sid and Auth Token from twilio.com/console
+def send_notification(target_number, target_mail):
     account_sid = 'AC6dd084097904f1cf92ad8bc2b358fa87'
     auth_token = '113f188d5e893c3b3abaea5e6a0ccd40'
     client = Client(account_sid, auth_token)
 
-    message = client.messages.create(
-        body="Your DormMarket order was successfully processed as of " + str(datetime.datetime.now()),
-        from_='+16176185707',
-        to='+16173350541'
-    )
+    try:
+        message = client.messages.create(
+            body="Your DormMarket order was successfully processed as of " + str(datetime.datetime.now()),
+            from_='+16176185707',
+            to='+1' + target_number
+        )
+        print("SMS sent: ", message.sid)
+    except:
+        print("Invalid phone number or something")
 
-    print("SMS sent: ", message.sid)
+    try:
+        mail.send_mail(target_mail, "Your DormMarket order was successfully processed!",
+                       """
+                       Dear John,
+                           Congratulation! Your DormMarket order has been completed!
+
+                       Regards,
+                            DormMarket Team
+                       """)
+    except Exception as e:
+        print("Invalid email or something:" + str(e))

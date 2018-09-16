@@ -54,6 +54,7 @@ def index(request):
             except:
                 pass
 
+    # loads asset information for each market
     market_assets = {}
     for market in unique_markets:
         while True:
@@ -87,6 +88,7 @@ def index(request):
 
     print(market_assets)
 
+    # organizes markets to display into rows
     rows = []
     for i in range(len(market_objects)):
         if i % 3 == 0:

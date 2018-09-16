@@ -32,16 +32,16 @@
         y4.innerHTML = market_type;
 
         var z_new = document.getElementById("mkt_inspct_price_new");
-        z_new.innerHTML = "Buy Now for $"+5;//marketProperties[market_type]["new"]
+        z_new.innerHTML = "Buy Now for $"+marketProperties[market_type]["new"];
 
         var z_good = document.getElementById("mkt_inspct_price_good");
-        z_good.innerHTML = "Buy Now for $"+5;//marketProperties[market_type]["new"]
+        z_good.innerHTML = "Buy Now for $"+marketProperties[market_type]["good"];
 
         var z_okay = document.getElementById("mkt_inspct_price_okay");
-        z_okay.innerHTML = "Buy Now for $"+5;//marketProperties[market_type]["new"]
+        z_okay.innerHTML = "Buy Now for $"+marketProperties[market_type]["okay"];
 
         var z_poor = document.getElementById("mkt_inspct_price_poor");
-        z_poor.innerHTML = "Buy Now for $"+5;//marketProperties[market_type]["new"]
+        z_poor.innerHTML = "Buy Now for $"+marketProperties[market_type]["poor"];
     }
 
     function hideMarketView() {
@@ -73,19 +73,19 @@
     <br><a onclick="javascript:hideMarketView()"><div class='highlight_reverse'>Close Market Inspector</div></a>
     <div class='subview_content'><br>
         <div class='highlight'><div id='mkt_inspct_name1'>Market Name</div><font size='3' color='#444444'>In New Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
-        <br><br><div class='highlight_blue'>Buy Later for Less...</div>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_new">Buy Now for $__</div>
+        <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_new">Buy Now for $__</div>
         <br><br><br>
 
         <div class='highlight'><div id='mkt_inspct_name2'>Market Name</div><font size='3' color='#444444'>In Good Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
-        <br><br><div class='highlight_blue'>Buy Later for Less...</div>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_good">Buy Now for $__</div>
+        <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_good">Buy Now for $__</div>
         <br><br><br>
 
         <div class='highlight'><div id='mkt_inspct_name3'>Market Name</div><font size='3' color='#444444'>In Okay Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
-        <br><br><div class='highlight_blue'>Buy Later for Less...</div>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_okay">Buy Now for $__</div>
+        <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_okay">Buy Now for $__</div>
         <br><br><br>
 
         <div class='highlight'><div id='mkt_inspct_name4'>Market Name</div><font size='3' color='#444444'>In Poor Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
-        <br><br><div class='highlight_blue'>Buy Later for Less...</div>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_poor">Buy Now for $__</div>
+        <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<div class='highlight_green' id="mkt_inspct_price_poor">Buy Now for $__</div>
         <br><br>
     </div>
 </div>

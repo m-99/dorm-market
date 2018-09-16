@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <!-- End Boostrap CSS -->
     <link rel="stylesheet" href="{% static 'main/base_style.css'%}">
+    <link type="text/css" rel="stylesheet" href="{% static 'main/main.css' %}" media="screen">
+    {% block styles %}{% endblock %}
     <title>{% block title %}Dorm Market{% endblock %}</title>
 </head>
 <body>

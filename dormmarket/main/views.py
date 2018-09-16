@@ -540,7 +540,8 @@ def buy_now(request, market_name, condition):
         try:
             # get lowest asking price
             r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset_id}, headers = headers, timeout = 0.1)
-            price = int(r.json()['data']['price'])
+            print(r.json())
+            price = int(r.json()['data'][0]['price'])
             break
         except:
             pass

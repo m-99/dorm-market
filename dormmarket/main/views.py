@@ -22,7 +22,6 @@ headers = {
     'Authorization': 'Bearer ' + ACCESS_ID,
 }
 
-
 # first thing that user sees -> browse
 def index(request):
     items = Order.objects.order_by('-time_posted')[:9]
@@ -84,52 +83,6 @@ def focused(request):
     return HttpResponse("hey bb ur at focused")
 
 
-# a form to submit a buy request for a type of item
-def submit_buy(request):
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            profile = request.user.profile
-            user_object = User.objects.get(username=request.user.username)
-            params = dict(request.POST)
-
-            print(profile.order_set.all())
-
-            order = models.Order.objects.create(trader_name=user_object.profile,
-                                                item_name=params['item_name'],
-                                                type=params['type'],
-                                                image_url=params['image_url'])
-            print(order)
-            return redirect('index')
-        else:
-            print("Please Log in")
-            return redirect('index')
-    else:
-        return HttpResponse("hey bb ur at submit_buy")
-
-
-# a form to submit an item to be sold in the market
-def submit_sell(request):
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            profile = request.user.profile
-            user_object = User.objects.get(username=request.user.username)
-            params = dict(request.POST)
-
-            print(profile.order_set.all())
-
-            order = models.Order.objects.create(trader_name=user_object.profile,
-                                                item_name=params['item_name'],
-                                                type=params['type'],
-                                                image_url=params['image_url'])
-            print(order)
-            return redirect('index')
-        else:
-            print("Please Log in")
-            return redirect('index')
-    else:
-        return HttpResponse("hey bb ur at submit_sell")
-
-
 # view items that you are selling in the marketplace
 def trade_list(request):
     if request.user.is_authenticated:
@@ -160,7 +113,7 @@ def trade_list(request):
 
 
 def sell(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated:
         # get the form info
         market = request.POST['market']
         condition = request.POST['condition']
@@ -194,8 +147,6 @@ def sell(request):
 
             print(r.json())
             market_id = r.json()['data']
-
-            print(conditions)
 
             # Make new assets for each condition
             for condition in conditions:
@@ -250,8 +201,24 @@ def sell(request):
         r = requests.post(
             'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/%s/' % (market_id,),
             params=params, data=body, headers=headers)
+        print(r)
+        print(r.json())
 
-    # Return a redirect to your post
+        user_object = User.objects.get(username=request.user.username)
+        order = models.Order.objects.create(trader_name=user_object.profile,
+                                            market_name=market,
+                                            item_name="fridge huge drifdege",
+                                            description=description,
+                                            image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg",
+                                            order_id=r.json()['data']['order']['orderId'],
+                                            time_posted=datetime.datetime.now())
+
+        print("Checking if any orders were filled and send SMS if appropriate.")
+        check_order_filled(request)
+
+        # TODO: Return a redirect to your sells
+        form = SellForm()
+        return render(request, 'main/buy.html', {'form': form})
 
     else:
         form = SellForm()
@@ -259,7 +226,7 @@ def sell(request):
 
 
 def buy(request):
-    if request.method == 'POST':
+    if request.method == 'POST' and request.user.is_authenticated:
         # get the form info
         market = request.POST['market']
         condition = request.POST['condition']
@@ -318,7 +285,24 @@ def buy(request):
                 'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,),
                 params=params, data=body, headers=headers)
 
-    # Return a redirect to your buys
+            print(r)
+            print(r.json())
+
+            user_object = User.objects.get(username=request.user.username)
+            order = models.Order.objects.create(trader_name=user_object.profile,
+                                                market_name=market,
+                                                item_name="fridge huge drifdege",
+                                                description=description,
+                                                image_url="https://brain-images-ssl.cdn.dixons.com/1/4/10174941/l_10174941_003.jpg",
+                                                order_id=r.json()['data']['order']['orderId'],
+                                                time_posted=datetime.datetime.now())
+
+            print("Checking if any orders were filled and send SMS if appropriate.")
+            check_order_filled(request)
+
+        # TODO: Return a redirect to your buys
+        form = BuyForm()
+        return render(request, 'main/buy.html', {'form': form})
 
     else:
         form = BuyForm()
@@ -333,7 +317,6 @@ def get_order_book(request):
         }
 
         try:
-            check_order_filled(request)
             r = requests.get(
                 'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/' + side + '/',
                 params=params, headers=headers)
@@ -362,11 +345,16 @@ def check_order_filled(request):
         print("trades: ", r.json())
         info = r.json()['data']
         print(info)
-        for order in info:
-            if order['timestamp'] > time.time() * 1000 - 30000:
-                if str(order_set.order_id) in (order['askId'], order['bidId']):
-                    send_notification()
-                    return True
+        for trade in info:
+            print(trade)
+            print(trade['timestamp'], time.time() * 1000 - 30000)
+            if trade['timestamp'] > time.time() * 1000 - 30000:
+                for order in order_set:
+                    print(order)
+                    if str(order.order_id) in (trade['askOrderId'], trade['bidOrderId']):
+                        print("Order was filled and belongs to user. Send notification")
+                        send_notification()
+                        return True
 
     except Exception as e:
         print("Request to API failed: " + e)
@@ -381,7 +369,7 @@ def send_notification():
     client = Client(account_sid, auth_token)
 
     message = client.messages.create(
-        body="Your order was successfully processed as of " + str(datetime.datetime.now()),
+        body="Your DormMarket order was successfully processed as of " + str(datetime.datetime.now()),
         from_='+16176185707',
         to='+16173350541'
     )

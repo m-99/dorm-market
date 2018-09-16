@@ -351,14 +351,10 @@ def buy(request):
 def get_order_book(request):
     if True or request.method == 'POST':
         side = 'bids'
-        params = {
-
-        }
-
         try:
             r = requests.get(
                 'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/' + side + '/',
-                params=params, headers=headers)
+                params={}, headers=headers)
             print(r)
             info = r.json()['data']
             print(info)
@@ -374,10 +370,9 @@ def get_order_book(request):
 
 def check_order_filled(request):
     try:
-        profile = request.user.profile
         order_set = Order.objects.order_by('-time_posted')
         print(order_set)
-        threshold_time = time.time() * 1000 - 30000
+        threshold_time = time.time() * 1000 - 120000
 
         while True:
             try:

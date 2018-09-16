@@ -14,8 +14,9 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-light bg-orange text-white navbar-expand-md">
-        <!-- TODO: insert a cool logo image -->
-        <a class="navbar-brand text-white" href="{% url 'index' %}">Dorm Market</a>
+        <a class="navbar-brand text-white" href="{% url 'index' %}">
+            <img src="{% static 'main/images/dorm-market-logo.png' %}" height="30px" width="auto">
+        </a>
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -24,7 +25,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto text-white">
                 <li class="nav-item">
-                    <a class="btn btn-outline-light" href="{% url 'index' %}">Markets</a>
+                    <a class="btn btn-outline-light" href="{% url 'index' %}">Browse</a>
                 </li>
                 <li class="nav-item">
                     <a class="btn btn-outline-light" href="{% url 'buy' %}">Buy</a>
@@ -41,19 +42,21 @@
             <!-- TODO: allow users to search for a market -->
             <!-- <form class="form-inline my-2 my-lg-0">
                 <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
             </form> -->
         </div>
     </nav>
     <!-- End navbar -->
 
     <!-- Content defined in child templates -->
-    <div id="content">
+    <div id="content" class="container-fluid">
         {% block content %}{% endblock %}
     </div>
+    <!-- End content defined in child templates -->
+
     <footer class="footer">
         <div class="container text-muted text-center">
-            Made with love by Luke, Magnus, Samantha, and Yong Hui
+            Made with love by <a href="http://www.lukebord.com/">Luke</a>, <a href="http://www.magmhj.com/">Magnus</a>, <a href="https://www.linkedin.com/in/miller99">Samantha</a>, and <a href="https://github.com/AzureFractal">Yong Hui</a>.
         </div>
     </footer>
 

@@ -8,26 +8,10 @@ body {
     background-color: #FFFFFF;
 }
 
-.nav_bar {
+#image-preview {
     width: 100%;
-    height: 110px;
-    background-color: #ff8400;
-    text-align: center;
-    font-size: 30px;
-    font-weight: bold;
-    color: white;
-    position: fixed;
-    z-index: 5;
-}
-
-a:link {
-    text-decoration: none;
-    color: white;
-}
-
-a:visited {
-    text-decoration: none;
-    color: white;
+    height: auto;
+    overflow: hidden;
 }
 
 .highlight {

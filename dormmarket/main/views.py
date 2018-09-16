@@ -161,14 +161,7 @@ def sell(request):
         price = int(request.POST['price'])
         quantity = 1
 
-<<<<<<< HEAD
         user_id = 'luke_test_user_id'
-=======
-		user_id = 'luke_test_user_id'
-
-
-
->>>>>>> updated urls to not use regex where unnecessary; further developed
 
         r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={},
                          headers=headers)
@@ -211,20 +204,9 @@ def sell(request):
                     'http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/%s/' % (market_id,),
                     params={}, data=body, headers=headers)
 
-<<<<<<< HEAD
             # Get new markets
             r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/',
                              params={}, headers=headers)
-=======
-			# Get new markets
-			r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers)
-
-		# Map market names to IDS
-		markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-
-		# Get market ID
-		market_id = markets[market]
->>>>>>> updated urls to not use regex where unnecessary; further developed
 
         # Map market names to IDS
         markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
@@ -245,20 +227,7 @@ def sell(request):
 
         asset_id = r.json()['data'][0]
 
-<<<<<<< HEAD
         print('ASSET_ID:', asset_id)
-=======
-		# Post new listing
-		params = {
-			'assetId': asset_id,
-		}
-
-		body = json.dumps({
-			'price': price,
-			'qty': quantity,
-			'userId': user_id,
-		})
->>>>>>> updated urls to not use regex where unnecessary; further developed
 
         # Post new listing
         params = {
@@ -280,8 +249,6 @@ def sell(request):
     else:
         form = SellForm()
         return render(request, 'main/sell.html', {'form': form})
-
-<<<<<<< HEAD
 
 def buy(request):
     if request.method == 'POST':
@@ -412,75 +379,3 @@ def send_notification():
     )
 
     print(message.sid)
-=======
-
-	else:
-		form = SellForm()
-		return render(request, 'main/sell.html', {'form': form})
-
-def buy(request):
-	if request.method == 'POST':
-		# get the form info
-		market = request.POST['market']
-		condition = request.POST['condition']
-		description = request.POST['description']
-		price = int(request.POST['price'])
-		quantity = 1
-
-		user_id = 'luke_test_user_id_buy'
-
-
-
-		# Get markets
-		r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers)
-
-		print(r.json()['data'])
-
-		# Check that a market exists
-		if market not in [market['marketName'] for market in r.json()['data']]:
-			# Market doesn't exist
-			print('market not found')
-			return None
-
-		# Map market names to IDS
-		markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
-
-		# Get market ID
-		market_id = markets[market]
-
-		print('MARKET ID', market_id)
-
-		# Get asset for correct condition
-		# Make a BUY request for every condition <= condition
-		cond_id = conditions.index(condition)
-		for i in range(cond_id, len(conditions)):
-
-			r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
-				"queries": ['"condition" = \'' + conditions[i] + '\'']
-			}, headers = headers)
-
-			asset_id = r.json()['data'][0]
-
-			print('ASSET_ID:', asset_id)
-
-			# Post new listing
-			params = {
-				'assetId': asset_id,
-			}
-
-			body = json.dumps({
-				'price': price,
-				'qty': quantity,
-				'userId': user_id,
-			})
-
-			r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
-
-		# Return a redirect to your buys
-
-
-
-	else:
-		form = BuyForm()
-		return render(request, 'main/buy.html', {'form': form})
->>>>>>> updated urls to not use regex where unnecessary; further developed

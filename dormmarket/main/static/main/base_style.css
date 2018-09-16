@@ -21,3 +21,7 @@
     font-size: 30px;
     font-weight: bold;
 }
+
+.footer a {
+    color: #ff8400 !important;
+}

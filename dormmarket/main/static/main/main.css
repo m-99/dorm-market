@@ -6,28 +6,13 @@ body {
     -webkit-text-size-adjust: none;
     resize: none;
     background-color: #FFFFFF;
+    overflow-x: hidden;
 }
 
-.nav_bar {
+#image-preview {
     width: 100%;
-    height: 110px;
-    background-color: #ff8400;
-    text-align: center;
-    font-size: 30px;
-    font-weight: bold;
-    color: white;
-    position: fixed;
-    z-index: 5;
-}
-
-a:link {
-    text-decoration: none;
-    color: white;
-}
-
-a:visited {
-    text-decoration: none;
-    color: white;
+    height: auto;
+    overflow: hidden;
 }
 
 .highlight {
@@ -36,6 +21,32 @@ a:visited {
     display: inline-block;
     padding: 10px;
     border-radius: 8px;
+}
+
+.highlight_reverse {
+    color: white;
+    background-color: #ff8400;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.highlight_green {
+    color: white;
+    background-color: #00CC88;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 23px;
+}
+
+.highlight_blue {
+    color: white;
+    background-color: #0088CC;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 23px;
 }
 
 .item_row {
@@ -55,13 +66,58 @@ a:visited {
     overflow: hidden;
     text-align: center;
     font-weight: bold;
-    font-size: 21px;
+    font-size: 18px;
     color: #ff8400;
 }
 
 .item_image {
     position: relative;
     width: 100%;
-    height: 72%;
+    height: 69%;
+    background-color: #666666;
+}
+
+.subview {
+    position: fixed;
+    top: 72px;
+    width: calc(100% - 30px);
+    height: calc(100% - 72px);
+    bottom: 0px;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.95);
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff8400;
+    z-index: 1;
+    padding: 0px;
+    margin: 0px;
+    padding-left: -15px;
+}
+
+.subview_content {
+    position: fixed;
+    width: 700px;
+    left: 50%;
+    margin-left: -350px;
+    bottom: 50px;
+    top: 187px;
+    border-radius: 16px;
+    border: 1px solid #CCCCCC;
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-align: center;
+    font-weight: bold;
+    font-size: 30px;
+    color: #333333;
+}
+
+.subview_images {
+    position: relative;
+    width: 100%;
+    top: 35px;
+    height: 260px;
+    overflow: hidden;
+    text-align: center;
     background-color: #666666;
 }

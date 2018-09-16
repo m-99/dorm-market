@@ -501,20 +501,46 @@ Regards,
 
 
 
-def buy_now(request, asset_id):
+def buy_now(request, market_name, condition):
     user_id = str(request.user.pk)
-    market_id = request.POST['market-id']
+    quantity = 1
+
+    # Get market ID
+    while True:
+        try:
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout=0.1)
+            # Map market names to IDS
+            markets = {market['marketName']: market['marketId'] for market in r.json()['data']}
+        
+            # Get market ID
+            market_id = markets[market_name]
+
+            break
+        except:
+            pass
+
+
+    # Get asset for correct condition
+    while True:
+        try:
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
+                "queries": ['"assetName" = \'' + condition + '\'']
+            }, headers = headers, timeout = 0.1)
+            break
+        except:
+            pass
+
+    print('ASSETS:', r.json())
+
+    asset_id = r.json()['data'][0]
+
 
     # Get best price
     while True:
         try:
-            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets_by_ids/%s/' % (market_id,), params={'assetId': '5b9dcec13b80ed4131840af0'}, headers=headers, timeout= 0.1)
-            if int(r.json()['data'][0]['marketPrice']) == 0:
-                # get lowest asking price
-                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset_id}, headers = headers, timeout = 0.1)
-                price = int(r.json()['data']['price'])
-            else:
-                price = int(r.json()['data'][0]['marketPrice'])
+            # get lowest asking price
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset_id}, headers = headers, timeout = 0.1)
+            price = int(r.json()['data']['price'])
             break
         except:
             pass
@@ -532,7 +558,7 @@ def buy_now(request, asset_id):
 
     while True:
         try:
-            r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers)
+            r = requests.post('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/bids/%s/' % (market_id,), params = params, data=body, headers = headers, timeout = 0.1)
             break
         except:
             pass
@@ -545,8 +571,9 @@ def buy_now(request, asset_id):
     else:
         order_id = r.json()['data']['order']['orderId']
 
-    order = Order(trader_name=request.user.profile, market_name=market, order_id=order_id)
+    order = Order(trader_name=request.user.profile, market_name=market_name, order_id=order_id)
     order.save()
+    print('order saved!')
 
     check_order_filled(request)
 

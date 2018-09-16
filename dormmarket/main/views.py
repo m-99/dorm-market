@@ -59,7 +59,7 @@ def index(request):
     for market_obj in data:
         market_ids[market_obj['marketName']] = market_obj['marketId']
         unique_markets.append(market_obj['marketName'])
-        market_objects.append([market_obj['marketName']])
+        market_objects.append([market_obj['marketName'], "test.png"])
 
     # for each market, find all asset ids
     market_asset_ids = {}
@@ -69,6 +69,14 @@ def index(request):
 
     # loads asset information for each market
     market_assets = {}
+    orders_response = callAPI('orders/asks/', {})['data']
+    orders = {}
+    for order in orders_response:
+        if order['assetId'] in orders:
+            orders[order['assetId']].append(order['orderId'])
+        else:
+            orders[order['assetId']] = [order['orderId']]
+
     for market in unique_markets:
         asset_objects = callAPI('assets/get_assets_by_ids/'+market_ids[market]+'/', {'assetId': market_asset_ids[market]})['data']
         assets = {}
@@ -81,6 +89,15 @@ def index(request):
             except:
                 price = 0
             assets[asset['assetName']] = price
+
+            # print("ASSET ID "+str(asset['assetId']))
+            
+            assets[asset['assetName']+"_img"] = "test.png"
+            if asset['assetId'] in orders:
+                filtered_orders = Order.objects.filter(order_id=orders[asset['assetId']][0])
+                if len(filtered_orders) > 0:
+                    url = [0].image.url
+                    assets[asset['assetName']+"_img"] = url
         market_assets[market] = assets
 
 

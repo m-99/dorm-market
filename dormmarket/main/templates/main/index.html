@@ -36,6 +36,8 @@
             poor_div.style.display = "none";
         } else {
             poor_div.style.display = "block";
+            var imgs = document.getElementById("mkt_inspct_imgs_poor");
+            imgs.innerHTML = "<img src='"+marketProperties[market_type]["poor_img"]+"' height='80%'>";
         };
 
         var okay_div = document.getElementById("mkt_segment_okay");
@@ -43,6 +45,8 @@
             okay_div.style.display = "none";
         } else {
             okay_div.style.display = "block";
+            var imgs = document.getElementById("mkt_inspct_imgs_okay");
+            imgs.innerHTML = "<img src='"+marketProperties[market_type]["okay_img"]+"' height='80%'>";
         };
 
         var good_div = document.getElementById("mkt_segment_good");
@@ -50,6 +54,8 @@
             good_div.style.display = "none";
         } else {
             good_div.style.display = "block";
+            var imgs = document.getElementById("mkt_inspct_imgs_good");
+            imgs.innerHTML = "<img src='"+marketProperties[market_type]["good_img"]+"' height='80%'>";
         };
 
         var new_div = document.getElementById("mkt_segment_new");
@@ -57,6 +63,8 @@
             new_div.style.display = "none";
         } else {
             new_div.style.display = "block";
+            var imgs = document.getElementById("mkt_inspct_imgs_new");
+            imgs.innerHTML = "<img src='"+marketProperties[market_type]["new_img"]+"' height='80%'>";
         };
 
         var z_new = document.getElementById("mkt_inspct_price_new");
@@ -111,26 +119,26 @@
     <div class='subview_content'><br>
 
     <div id='mkt_segment_new' style='display: inline-block;'>   
-        <div class='highlight'><div id='mkt_inspct_name1'>Market Name</div><font size='3' color='#444444'>In New Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
+        <div class='highlight'><div id='mkt_inspct_name1'>Market Name</div><font size='3' color='#444444'>In New Condition</font></div><div class='subview_images' id='mkt_inspct_imgs_new'></div>
         <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<a id="mkt_inspct_price_new_link"><div class='highlight_green' id="mkt_inspct_price_new">Buy Now for $__</div></a>
         <br><br><br>
         </div>
 
     <div id='mkt_segment_good' style='display: inline-block;'>
-        <div class='highlight'><div id='mkt_inspct_name2'>Market Name</div><font size='3' color='#444444'>In Good Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
+        <div class='highlight'><div id='mkt_inspct_name2'>Market Name</div><font size='3' color='#444444'>In Good Condition</font></div><div class='subview_images' id='mkt_inspct_imgs_good'></div>
         <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<a id="mkt_inspct_price_good_link"><div class='highlight_green' id="mkt_inspct_price_good">Buy Now for $__</div></a>
         <br><br><br>
     </div>      
 
     <div id='mkt_segment_okay' style='display: inline-block;'>
-        <div class='highlight'><div id='mkt_inspct_name3'>Market Name</div><font size='3' color='#444444'>In Okay Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
+        <div class='highlight'><div id='mkt_inspct_name3'>Market Name</div><font size='3' color='#444444'>In Okay Condition</font></div><div class='subview_images' id='mkt_inspct_imgs_okay'></div>
         <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<a id="mkt_inspct_price_okay_link"><div class='highlight_green' id="mkt_inspct_price_okay">Buy Now for $__</div></a>
         <br><br><br>
     </div>
 
 
     <div id='mkt_segment_poor' style='display: inline-block;'>
-        <div class='highlight'><div id='mkt_inspct_name4'>Market Name</div><font size='3' color='#444444'>In Poor Condition</font></div><div class='subview_images' id='mkt_inspct_imgs'></div>
+        <div class='highlight'><div id='mkt_inspct_name4'>Market Name</div><font size='3' color='#444444'>In Poor Condition</font></div><div class='subview_images' id='mkt_inspct_imgs_poor'></div>
         <br><br><a href={% url 'buy' %}><div class='highlight_blue'>Buy Later for Less...</div></a>&nbsp;&nbsp;&nbsp;<a id="mkt_inspct_price_poor_link"><div class='highlight_green' id="mkt_inspct_price_poor">Buy Now for $__</div></a>
         <br><br>
     </div>

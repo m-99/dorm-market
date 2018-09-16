@@ -479,8 +479,8 @@ def send_notification(target_number, target_mail):
             to='+1' + target_number
         )
         print("SMS sent: ", message.sid)
-    except:
-        print("Invalid phone number or something")
+    except Exception as e:
+        print("Invalid phone number or something: " + str(e))
 
     try:
         mail.send_mail(target_mail, "Your DormMarket order was successfully processed!",

@@ -22,6 +22,32 @@ body {
     border-radius: 8px;
 }
 
+.highlight_reverse {
+    color: white;
+    background-color: #ff8400;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.highlight_green {
+    color: white;
+    background-color: #00CC88;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 23px;
+}
+
+.highlight_blue {
+    color: white;
+    background-color: #0088CC;
+    display: inline-block;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 23px;
+}
+
 .item_row {
     display: inline-block;
     width: 100%;
@@ -47,5 +73,46 @@ body {
     position: relative;
     width: 100%;
     height: 72%;
+    background-color: #666666;
+}
+
+.subview {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    bottom: 0px;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.95);
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff8400;
+    z-index: 3;
+}
+
+.subview_content {
+    position: fixed;
+    width: 700px;
+    left: 50%;
+    margin-left: -350px;
+    bottom: 50px;
+    top: 212px;
+    border-radius: 16px;
+    border: 1px solid #CCCCCC;
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-align: center;
+    font-weight: bold;
+    font-size: 30px;
+    color: #333333;
+}
+
+.subview_images {
+    position: relative;
+    width: 100%;
+    top: 35px;
+    height: 260px;
+    overflow: hidden;
+    text-align: center;
     background-color: #666666;
 }

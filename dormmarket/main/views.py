@@ -14,6 +14,7 @@ from django.urls import reverse
 
 from .forms import *
 from .models import *
+from . import models
 
 conditions = ['poor', 'okay', 'good', 'new', ]
 headers = {
@@ -22,18 +23,80 @@ headers = {
     'Authorization': 'Bearer ' + ACCESS_ID,
 }
 
-
 # first thing that user sees -> browse
 def index(request):
-    items = Order.objects.order_by('-time_posted')[:9]
+
+    # loads all market ids
+    unique_markets = []
+    market_objects = []
+    market_ids = {}
+    while True:
+        try:
+            r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/markets/', params={}, headers = headers, timeout = 0.1)
+            data = r.json()['data']
+            for market_obj in data:
+                market_ids[market_obj['marketName']] = market_obj['marketId']
+                unique_markets.append(market_obj['marketName'])
+                market_objects.append([market_obj['marketName']])
+            break
+        except:
+            pass
+
+    # for each market, find all asset ids
+    market_asset_ids = {}
+    for market in unique_markets:
+        while True:
+            try:
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/'+market_ids[market]+'/', params={}, headers = headers, timeout = 0.1)
+                asset_ids = r.json()['data']
+                market_asset_ids[market] = asset_ids
+                break
+            except:
+                pass
+
+    market_assets = {}
+    for market in unique_markets:
+        while True:
+            try:
+                r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets_by_ids/'+market_ids[market]+'/', params={
+                        'assetId': market_asset_ids[market]
+                    }, headers = headers, timeout = 0.1)
+                break
+            except:
+                pass
+        asset_objects = r.json()['data']
+        assets = {}
+        for asset in asset_objects:
+            while True:
+                try:
+                    r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={
+                            'assetId': asset['assetId']
+                        }, headers = headers, timeout = 0.1)
+                    asset_price = r.json()['data']
+                    break
+                except:
+                    pass
+
+            price = 0
+            try:
+                price = asset_price[0]['price']
+            except:
+                price = 0
+            assets[asset['assetName']] = price
+        market_assets[market] = assets
+
+    print(market_assets)
+
     rows = []
-    for i in range(len(items)):
+    for i in range(len(market_objects)):
         if i % 3 == 0:
-            rows.append([items[i]])
+            rows.append([market_objects[i]])
         else:
-            rows[i // 3].append(items[i])
+            rows[i // 3].append(market_objects[i])
     context = {
-        "rows": rows
+        "rows": rows,
+        "markets": market_objects,
+        "assets": market_assets
     }
     return render(request, 'main/index.html', context)
 

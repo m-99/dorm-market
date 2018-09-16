@@ -35,9 +35,21 @@
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto text-white">
+                {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="btn btn-outline-light" href="{% url 'orders' %}">My Orders</a>
                 </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-light" href="{% url 'logout' %}">Log Out</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-light" href="{% url 'login' %}">Log In</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-light" href="{% url 'signup' %}">Sign Up</a>
+                </li>
+                {% endif %}
             </ul>
             <!-- TODO: allow users to search for a market -->
             <!-- <form class="form-inline my-2 my-lg-0">

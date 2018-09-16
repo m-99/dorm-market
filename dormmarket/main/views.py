@@ -200,7 +200,7 @@ def sell(request):
         quantity = 1
 
         user_id = str(request.user.pk)
-        
+       
 
         # Check that a market exists
         if market not in [market['marketName'] for market in markets]:
@@ -432,7 +432,7 @@ def get_order_book(request):
 
 def check_order_filled(request):
     try:
-        order_set = Order.objects.order_by('-time_posted')
+        order_set = Order.objects.all()
         print(order_set)
         threshold_time = time.time() * 1000 - 120000
 
@@ -452,13 +452,15 @@ def check_order_filled(request):
             print(trade['timestamp'], threshold_time)
             if trade['timestamp'] > threshold_time:
                 for order in order_set:
-                    print(order)
+                    print(order.order_id, order.notified)
                     if str(order.order_id) in (trade['askOrderId'], trade['bidOrderId']) and order.notified == "N":
                         print("Order was filled and belongs to user. Send notification")
                         order.notified = "Y"
                         order.save()
-                        print("Phone Number?: ", order.trader_name.phone_number)
-                        send_notification(str(order.trader_name.phone_number), str(order.trader_name.email))
+                        trade_price = trade['askPrice'] if trade['askTimestamp'] < trade['bidTimestamp'] else trade[
+                            'bidPrice']
+                        order_side = "sell" if str(order.order_id) == trade['askOrderId'] else "buy"
+                        send_notification(order, trade_price, order_side)
 
     except Exception as e:
         print("Request to API failed: " + str(e))
@@ -466,7 +468,11 @@ def check_order_filled(request):
     return False
 
 
-def send_notification(target_number, target_mail):
+def send_notification(order, trade_price, order_side):
+    target_number = str(order.trader_name.phone_number)
+    target_mail = str(order.trader_name.email)
+    print("Phone Number?: ", order.trader_name.phone_number)
+
     account_sid = 'AC6dd084097904f1cf92ad8bc2b358fa87'
     auth_token = '113f188d5e893c3b3abaea5e6a0ccd40'
     client = Client(account_sid, auth_token)
@@ -478,18 +484,20 @@ def send_notification(target_number, target_mail):
             to='+1' + target_number
         )
         print("SMS sent: ", message.sid)
-    except:
-        print("Invalid phone number or something")
+    except Exception as e:
+        print("Invalid phone number or something: " + str(e))
 
     try:
         mail.send_mail(target_mail, "Your DormMarket order was successfully processed!",
                        """
-                       Dear John,
-                           Congratulation! Your DormMarket order has been completed!
+Dear John,
+    Congratulations! Your {} order for a {} ({}) has been completed at ${}!
+    View the details at DormMarket.com/orders.
 
-                       Regards,
-                            DormMarket Team
-                       """)
+Regards,
+    DormMarket Team
+                       """.format(order_side, order.market_name, order.order_id, trade_price)
+                       )
     except Exception as e:
         print("Invalid email or something:" + str(e))
 

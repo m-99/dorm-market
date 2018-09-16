@@ -1,0 +1,77 @@
+{% extends 'main/templates/main/base.html' %}
+{% load static %}
+
+{% block title %}
+	Dorm Market - Sell Item
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="row" style="height: 100%">
+	<div class="col-6 vertical-align">
+		<img id="image-preview" src="" width="100%" height="auto" />
+	</div>
+	<div class="col-6">
+		<form action='' method='post' enctype="multipart/form-data">
+			{% csrf_token %}
+			<div class="form-group row">
+				<label for="image" class="col-4 col-form-label">Image</label>
+				<div class="col-8">
+					<input type='file' id="image" name="image" />
+		  			
+				</div>
+			</div>
+			<div class="form-group row">
+				<label for="market_name" class="col-4 col-form-label">Market/Item Category</label> 
+				<div class="col-8">
+			  		<select class="form-control" id="market_name" name="market_name">
+			  			{% for market in markets %}
+			  			<option value='{{ market.marketName|escape }}'>{{ market.marketName }}</option>
+			  			{% endfor %}
+			  			<option value="other">Other</option>
+			  		</select>
+				</div>
+			</div> 
+			<div class="form-group row" id="market-other-container" style="display:none">
+				<label for="market-other" class="col-4 col-form-label">Other</label> 
+				<div class="col-8">
+					<input id="market-other" name="market-other" type="text" class="form-control here">
+				</div>
+			</div> 
+			<div class="form-group row">
+				<label for="description" class="col-4 col-form-label">Description</label> 
+				<div class="col-8">
+			  		<textarea id="description" name="description" cols="40" rows="5" class="form-control"></textarea>
+				</div>
+			</div> 
+			<div class="form-group row">
+				<label for="condition" class="col-4 col-form-label">Condition</label> 
+				<div class="col-8">
+			  		<select class="form-control" id="condition" name="condition">
+			  			<option value='poor'>Poor</option>
+			  			<option value='okay'>Okay</option>
+			  			<option value="good">Good</option>
+			  			<option value="new">New</option>
+			  		</select>
+				</div>
+			</div> 
+			<div class="form-group row">
+				<label for="price" class="col-4 col-form-label">Price (dollars)</label> 
+				<div class="col-8">
+			  		<input id="price" name="price" type="number" class="form-control here">
+				</div>
+			</div> 
+			<div class="form-group row">
+				<div class="offset-4 col-8">
+			  		<button name="submit" type="submit" class="btn btn-primary">Submit</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+
+{% endblock %}
+

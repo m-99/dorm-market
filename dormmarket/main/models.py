@@ -16,7 +16,8 @@ class Order(models.Model):
     market_name = models.CharField(max_length=500, blank=True)
     item_name = models.CharField(max_length=500, blank=True)
     description = models.CharField(max_length=500, blank=True)
-    image_url = models.CharField(max_length=500, blank=True)
+    #image_url = models.CharField(max_length=500, blank=True)
+    image = models.ImageField(upload_to='order_images/', null=True)
     order_id = models.CharField(max_length=500, blank=True)
     time_posted = models.DateTimeField(auto_now_add=True, blank=True)
 

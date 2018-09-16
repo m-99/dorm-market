@@ -35,16 +35,18 @@ def callAPI(api_path, params):
             pass
 
 def asset_exists_for_market(market, market_assets):
-    print(market_assets[market[0]])
-        
     if type(market_assets[market[0]]['poor']) == type(""):
-        return True
+        if int(market_assets[market[0]]['poor']) > 0:
+            return True
     elif type(market_assets[market[0]]['okay']) == type(""):
-        return True
+        if int(market_assets[market[0]]['okay']) > 0:
+            return True
     elif type(market_assets[market[0]]['good'])  == type(""):
-        return True
+        if int(market_assets[market[0]]['good']) > 0:
+            return True
     elif type(market_assets[market[0]]['new'])  == type(""):
-        return True
+        if int(market_assets[market[0]]['new']) > 0:
+            return True
 
     return False
 
@@ -74,22 +76,12 @@ def index(request):
         assets = {}
         for asset in asset_objects:
             # Get best price
-            if asset['marketPrice']:
-                price = asset['marketPrice']
-            else:
-                while True:
-                    try:
-                        # get lowest asking price
-                        r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/orders/asks/lowest_ask', params={'assetId': asset['assetId']}, headers = headers, timeout = 0.1)
-                        #print(r.json())
-                        if r.json()['message'] != 'OK':
-                            price = 0
-                            break
-                        else:
-                            price = int(r.json()['data']['price'])
-                        break
-                    except:
-                        pass
+            condition = False
+            r = callAPI("orders/asks/lowest_ask", {'assetId': asset['assetId']})
+            try:
+                price = int(r['data'][0]['price'])
+            except:
+                price = 0
             assets[asset['assetName']] = price
         market_assets[market] = assets
 

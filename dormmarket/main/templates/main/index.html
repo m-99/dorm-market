@@ -103,7 +103,7 @@
     {% for item in row %}
     <td valign='bottom' width='32.5%'>
         <a onclick="javascript:showMarketView('{{ item.0 }}')"><div class='item_cell'>
-            <div class='item_image'><img src='{{ item.1 }}' width='75%'></div>
+            <div class='item_image' style="overflow: hidden;"><img src='{{ item.1 }}' width='75%'></div>
             <!-- <br>{{ item.item_name }}<font color='#BBBBBB'> &bull;</font><font color='#11BB77'> $_</font> -->
             <font size='1'><br></font>{{ item.0 }}
         </div></a>

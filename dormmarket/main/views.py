@@ -59,7 +59,11 @@ def index(request):
     for market_obj in data:
         market_ids[market_obj['marketName']] = market_obj['marketId']
         unique_markets.append(market_obj['marketName'])
-        market_objects.append([market_obj['marketName'], "test.png"])
+        filtered_orders = Order.objects.filter(market_name = market_obj['marketName'])
+        imgurl = "test.png"
+        if len(filtered_orders) > 0:
+            imgurl = filtered_orders[0].image.url
+        market_objects.append([market_obj['marketName'], imgurl])
 
     # for each market, find all asset ids
     market_asset_ids = {}
@@ -76,7 +80,7 @@ def index(request):
             orders[order['assetId']].append(order['orderId'])
         else:
             orders[order['assetId']] = [order['orderId']]
-
+    print(orders)
     for market in unique_markets:
         asset_objects = callAPI('assets/get_assets_by_ids/'+market_ids[market]+'/', {'assetId': market_asset_ids[market]})['data']
         assets = {}
@@ -94,9 +98,11 @@ def index(request):
             
             assets[asset['assetName']+"_img"] = "test.png"
             if asset['assetId'] in orders:
-                filtered_orders = Order.objects.filter(order_id=orders[asset['assetId']][0])
+                print(orders[asset['assetId']])
+                filtered_orders = Order.objects.filter(market_name = market)
+                print(filtered_orders)
                 if len(filtered_orders) > 0:
-                    url = [0].image.url
+                    url = filtered_orders[0].image.url
                     assets[asset['assetName']+"_img"] = url
         market_assets[market] = assets
 
@@ -309,10 +315,13 @@ def sell(request):
 
         # Make an Order object linked to the user
         print('ASK:', r.json())
+        '''
         if r.json()['message'] != 'Order filled!':
             order_id = r.json()['data']['order']['_id']
         else:
-            order_id = r.json()['data']['order']['orderId']
+            '''
+        order_id = r.json()['data']['order']['orderId']
+
         form = SellForm({'description': description, 'market_name': market, "order_id": order_id}, request.FILES)
         if form.is_valid():
             order = form.save(commit = False)
@@ -403,10 +412,11 @@ def buy(request):
 
         # print(r.json())
         # Make an Order object linked to the user
+        '''
         if r.json()['message'] != 'Order filled!':
             order_id = r.json()['data']['order']['_id']
-        else:
-            order_id = r.json()['data']['order']['orderId']
+        else:'''
+        order_id = r.json()['data']['order']['orderId']
 
         order = Order(trader_name=request.user.profile, market_name=market, order_id=order_id)
         order.save()

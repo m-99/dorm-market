@@ -131,7 +131,7 @@ def sell(request):
         price = int(request.POST['price'])
         quantity = 1
 
-        user_id = request.user.pk
+        user_id = str(request.user.pk)
         
 
         # Check that a market exists
@@ -163,7 +163,7 @@ def sell(request):
             # Make new assets for each condition
             for condition in conditions:
                 body = json.dumps({
-                    "assetName": condition + ' ' + market,
+                    "assetName": condition,
                     "attributes": {
                         "condition": condition
                     },
@@ -197,7 +197,7 @@ def sell(request):
         while True:
             try:
                 r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
-                    "queries": ['"condition" = \'' + condition + '\'']
+                    "queries": ['"assetName" = \'' + condition + '\'']
                 }, headers = headers, timeout = 0.1)
                 break
             except:
@@ -229,7 +229,11 @@ def sell(request):
                 pass
 
         # Make an Order object linked to the user
-        order_id = r.json()['data']['order']['_id']
+        print('ASK:', r.json())
+        if r.json()['message'] != 'Order filled!':
+            order_id = r.json()['data']['order']['_id']
+        else:
+            order_id = r.json()['data']['order']['orderId']
         form = SellForm({'description': description, 'market_name': market, "order_id": order_id}, request.FILES)
         if form.is_valid():
             order = form.save(commit = False)
@@ -266,7 +270,7 @@ def buy(request):
         price = int(request.POST['price'])
         quantity = 1
 
-        user_id = request.user.pk
+        user_id = str(request.user.pk)
         
 
         # Check that a market exists
@@ -289,12 +293,13 @@ def buy(request):
         while True:
             try:
                 r = requests.get('http://nasdaqhackathon-258550565.us-east-1.elb.amazonaws.com:8080/api/assets/get_assets/%s/' % (market_id,), params={
-                    "queries": ['"condition" = \'' + condition + '\'']
+                    "queries": ['"assetName" = \'' + condition + '\'']
                 }, headers = headers)
                 break
             except:
                 pass
 
+        print(r.json())
         asset_id = r.json()['data'][0]
 
         print('ASSET_ID:', asset_id)
@@ -317,8 +322,12 @@ def buy(request):
             except:
                 pass
 
+        print(r.json())
         # Make an Order object linked to the user
-        order_id = r.json()['data']['order']['_id']
+        if r.json()['message'] != 'Order filled!':
+            order_id = r.json()['data']['order']['_id']
+        else:
+            order_id = r.json()['data']['order']['orderId']
 
         order = Order(trader_name = request.user.profile, market_name = market, order_id = order_id)
         order.save()

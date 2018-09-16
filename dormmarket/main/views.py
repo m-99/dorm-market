@@ -477,7 +477,13 @@ def send_notification(order, trade_price, order_side):
 
     try:
         message = client.messages.create(
-            body="Your DormMarket order was successfully processed as of " + str(datetime.datetime.now()),
+            body="Hi {}! Your {} order for a {} ({}) has been completed at ${}!   ".format(
+                order.trader_name.user.username,
+                order_side,
+                order.market_name,
+                order.order_id,
+                trade_price)
+                 + str(datetime.datetime.now()) + "   -DormMarket",
             from_='+16176185707',
             to='+1' + target_number
         )
@@ -488,13 +494,14 @@ def send_notification(order, trade_price, order_side):
     try:
         mail.send_mail(target_mail, "Your DormMarket order was successfully processed!",
                        """
-Dear John,
+Dear {},
     Congratulations! Your {} order for a {} ({}) has been completed at ${}!
     View the details at DormMarket.com/orders.
 
 Regards,
     DormMarket Team
-                       """.format(order_side, order.market_name, order.order_id, trade_price)
+                       """.format(order.trader_name.user.username,
+                                  order_side, order.market_name, order.order_id, trade_price)
                        )
     except Exception as e:
         print("Invalid email or something:" + str(e))

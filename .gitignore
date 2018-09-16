@@ -110,4 +110,4 @@ dormmarket/dormmarket/secret_key.txt
 *.idea
 *mailconfig.py
 
-dormmarket/media/
+# dormmarket/media/

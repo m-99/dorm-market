@@ -10,10 +10,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from main.access_id import ACCESS_ID
-
-from . import models
-from .models import Order
 from .forms import *
+from .models import *
 
 conditions = ['poor', 'okay', 'good', 'new', ]
 headers = {
@@ -22,10 +20,10 @@ headers = {
     'Authorization': 'Bearer ' + ACCESS_ID,
 }
 
+
 # first thing that user sees -> browse
 def index(request):
     items = Order.objects.order_by('-time_posted')[:9]
-    print(items)
     rows = []
     for i in range(len(items)):
         if i % 3 == 0:
@@ -77,26 +75,32 @@ def focused(request):
 
 # view items that you are selling in the marketplace
 def trade_list(request):
-    if request.user.is_authenticated:
-        profile = request.user.profile
-        order_set = profile.order_set.all()
+    # if request.user.is_authenticated:
+    #     profile = request.user.profile
+    #     order_set = profile.order_set.all()
 
-        print(order_set)
-        items = order_set
+    #     print(order_set)
+    #     # items = []
+    #     # for order in order_set:
+    #     #     items.append({"image": str(order.image_url),
+    #     #                   "name": str(order.item_name),
+    #     #                   "price": str(order.item_price)})
+    #     items = order_set
 
-        rows = []
-        for i in range(len(items)):
-            if i % 3 == 0:
-                rows.append([items[i]])
-            else:
-                rows[i // 3].append(items[i])
-        context = {
-            "rows": rows
-        }
-        return render(request, 'trade_list.html', context)
-    else:
-        print("Please Log in")
-        return render(request, 'trade_list.html')
+    #     rows = []
+    #     for i in range(len(items)):
+    #         if i % 3 == 0:
+    #             rows.append([items[i]])
+    #         else:
+    #             rows[i // 3].append(items[i])
+    #     context = {
+    #         "rows": rows
+    #     }
+    #     return render(request, 'trade_list.html', context)
+    # else:
+    #     print("Please Log in")
+    #     return render(request, 'trade_list.html')
+    return render(request, 'user_info.html')
 
 
 def sell(request):

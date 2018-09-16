@@ -6,3 +6,11 @@
     line-height: 60px;
     background-color: #f5f5f5;
 }
+
+.bg-orange {
+    background-color: #ff8400;
+}
+
+.nav-item > a {
+    margin-left: 6px;
+}

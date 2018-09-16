@@ -66,14 +66,14 @@ body {
     overflow: hidden;
     text-align: center;
     font-weight: bold;
-    font-size: 21px;
+    font-size: 18px;
     color: #ff8400;
 }
 
 .item_image {
     position: relative;
     width: 100%;
-    height: 72%;
+    height: 69%;
     background-color: #666666;
 }
 
